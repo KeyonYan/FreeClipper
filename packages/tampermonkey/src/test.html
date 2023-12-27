@@ -1,0 +1,277 @@
+<div class="RichText ztext Post-RichText css-117anjg" options="[object Object]"><p data-first-child="" data-pid="xVoUHEft">在平时的单页面项目里，大家肯定接触过axios库，一个易用、简洁且高效，使用Promise管理异步，告别传统callback方式的http库。</p><p data-pid="IIpo9EoW">最近有个项目里接口调取的频率比较高，接口队列长，然后等待数据的时间就是痛苦的煎熬，特别是一连串有关联的数据交互，每次打开页面我都有种欲死的感觉。经过一番深思改造后，除去接口本身的速度，对于页面的流畅度提高了不少，所以今天就和大家分享一下，怎么封装二次Axios，取消重复请求和接口缓存。</p><blockquote data-pid="KPJYR3jC">安装Axios</blockquote><p data-pid="OdDK5Ec9">npm install axios</p><blockquote data-pid="XmkSWL1E">Axios基本配置</blockquote><p data-pid="5Pni_Nv5">根目录下新建axios.config.js文件，先写入请求拦截器，响应拦截器，其中要注意接口请求失败的信息处理，根据status判断是否要进行额外的处理，例如下面例子判断statue为401则清除token，重新登录，如果有error.message 就返回错误信息代码100002，用于页面判断显示错误信息。</p><div class="highlight"><pre><code class="language-js"><span class="cm">/** axios封装 请求拦截、响应拦截 */</span>
+  <span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">'axios'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">router</span> <span class="nx">from</span> <span class="s1">'../router'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">qs</span> <span class="nx">from</span> <span class="s1">'qs'</span><span class="p">;</span>
+  
+  <span class="cm">/** 设置post请求头 */</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">post</span><span class="p">[</span><span class="s1">'Content-Type'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'application/x-www-form-urlencoded'</span><span class="p">;</span>
+  
+  <span class="cm">/** 请求拦截器*/</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="kd">let</span> <span class="nx">token</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">localStorage</span><span class="p">.</span><span class="nx">getItem</span><span class="p">(</span><span class="s1">'token'</span><span class="p">);</span>
+      <span class="nx">token</span> <span class="o">=</span> <span class="nx">token</span> <span class="o">?</span> <span class="nx">token</span> <span class="o">:</span> <span class="s1">''</span><span class="p">;</span>
+      <span class="nx">token</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">Authorization</span> <span class="o">=</span> <span class="nx">token</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nx">config</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span>
+  <span class="p">);</span>
+  
+  <span class="cm">/** 响应拦截器 */</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+    <span class="p">},</span>
+    <span class="c1">// 请求失败
+  </span><span class="c1"></span>	<span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="p">{</span> <span class="nx">response</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">error</span><span class="p">;</span>
+        <span class="cm">/** 浏览器报错 */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+          <span class="cm">/** 登录过期 */</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span> <span class="o">==</span> <span class="mi">401</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">localStorage</span><span class="p">.</span><span class="nx">removeItem</span><span class="p">(</span><span class="s1">'token'</span><span class="p">);</span>
+            <span class="nx">router</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'/login'</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="o">===</span> <span class="s1">'string'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span><span class="p">,</span> <span class="nx">message</span><span class="o">:</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="p">};</span>
+          <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">response</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">response</span> <span class="o">?</span> <span class="nx">response</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span> <span class="p">});</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">({</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">);</span>
+  
+  <span class="kr">export</span> <span class="k">default</span> <span class="nx">instance</span><span class="p">;</span>
+  </code></pre></div><blockquote data-pid="NjRiE3Ho">取消重复接口</blockquote><p data-pid="m5z42qRU">新建一个数组taskList用于存储接口请求任务队列，接口请求流程如下图。例如请求A接口的时候，先判断A接口是否存在于taskList里，如若存在则axios.CancelToken方法取消前一个A接口，然后往队列里增加本次A接口，等到请求完成的时候，再将A接口移除taskList，以此类推就完成一个动态任务队列啦。</p><figure data-size="normal"><noscript><img src="https://pic2.zhimg.com/v2-f9aa776ef5a224b718c7df735a087c65_b.jpg" data-caption="" data-size="normal" data-rawwidth="1302" data-rawheight="451" class="origin_image zh-lightbox-thumb" width="1302" data-original="https://pic2.zhimg.com/v2-f9aa776ef5a224b718c7df735a087c65_r.jpg"/></noscript><div><img src="https://pic2.zhimg.com/80/v2-f9aa776ef5a224b718c7df735a087c65_1440w.webp" data-caption="" data-size="normal" data-rawwidth="1302" data-rawheight="451" class="origin_image zh-lightbox-thumb lazy" width="1302" data-original="https://pic2.zhimg.com/v2-f9aa776ef5a224b718c7df735a087c65_r.jpg" data-actualsrc="https://pic2.zhimg.com/v2-f9aa776ef5a224b718c7df735a087c65_b.jpg" data-original-token="v2-dc9542e4f8d9befe871fc184d4ab458a" height="451" data-lazy-status="ok"></div></figure><div class="highlight"><pre><code class="language-js"><span class="cm">/** axios封装 请求拦截、响应拦截 */</span>
+  <span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">'axios'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">router</span> <span class="nx">from</span> <span class="s1">'../router'</span><span class="p">;</span>
+  
+  <span class="kr">const</span> <span class="nx">CancelToken</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">CancelToken</span><span class="p">,</span>
+  <span class="nx">apiCach</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="nx">taskList</span><span class="o">:</span> <span class="p">[]</span> <span class="cm">/** 请求任务列表 */</span><span class="p">,</span>
+      <span class="cm">/** 新增任务 */</span>
+      <span class="nx">addTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span> <span class="nx">original</span><span class="o">:</span> <span class="sb">`</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">url</span><span class="si">}</span><span class="sb">&amp;</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">method</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span> <span class="nx">cancelToken</span> <span class="p">});</span>
+      <span class="p">},</span>
+      <span class="cm">/** 删除任务 */</span>
+      <span class="nx">deleteTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">start</span><span class="p">,</span> <span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cancel</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="s1">'original'</span><span class="p">]</span> <span class="o">==</span> <span class="sb">`</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">url</span><span class="si">}</span><span class="sb">&amp;</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">method</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">cancelToken</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="nx">cancel</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="cm">/** 创建axios实例 */</span>
+    <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+      <span class="nx">timeout</span><span class="o">:</span> <span class="mi">1000</span> <span class="o">*</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="p">});</span>
+  
+  <span class="cm">/** 设置post请求头 */</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">post</span><span class="p">[</span><span class="s1">'Content-Type'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'application/x-www-form-urlencoded'</span><span class="p">;</span>
+  
+  <span class="cm">/** 请求拦截器*/</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">cancelToken</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">CancelToken</span><span class="p">((</span><span class="nx">c</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="cm">/** 删除任务 */</span>
+        <span class="nx">apiCach</span><span class="p">.</span><span class="nx">deleteTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">c</span><span class="p">);</span>
+        <span class="cm">/** 新增任务*/</span>
+        <span class="nx">apiCach</span><span class="p">.</span><span class="nx">addTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">c</span><span class="p">);</span>
+      <span class="p">});</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">expirationTime</span> <span class="o">=</span> <span class="k">void</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="kd">let</span> <span class="nx">token</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">localStorage</span><span class="p">.</span><span class="nx">getItem</span><span class="p">(</span><span class="s1">'token'</span><span class="p">);</span>
+      <span class="nx">token</span> <span class="o">=</span> <span class="nx">token</span> <span class="o">?</span> <span class="nx">token</span> <span class="o">:</span> <span class="s1">''</span><span class="p">;</span>
+      <span class="nx">token</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">Authorization</span> <span class="o">=</span> <span class="nx">token</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nx">config</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span>
+  <span class="p">);</span>
+  
+  <span class="cm">/** 响应拦截器 */</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">apiCach</span><span class="p">.</span><span class="nx">deleteTask</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">config</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+    <span class="p">},</span>
+    <span class="c1">// 请求失败
+  </span><span class="c1"></span>	<span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="p">{</span> <span class="nx">response</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">error</span><span class="p">;</span>
+        <span class="cm">/** 浏览器报错 */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span> <span class="o">==</span> <span class="mi">401</span> <span class="o">||</span> <span class="nx">response</span><span class="p">.</span><span class="nx">status</span> <span class="o">==</span> <span class="mi">403</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">localStorage</span><span class="p">.</span><span class="nx">removeItem</span><span class="p">(</span><span class="s1">'token'</span><span class="p">);</span>
+            <span class="nx">router</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'/login'</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="o">===</span> <span class="s1">'string'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span><span class="p">,</span> <span class="nx">message</span><span class="o">:</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="p">};</span>
+          <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">response</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">response</span> <span class="o">?</span> <span class="nx">response</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span> <span class="p">});</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">({</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">);</span>
+  
+  <span class="kr">export</span> <span class="k">default</span> <span class="nx">instance</span><span class="p">;</span>
+  </code></pre></div><blockquote data-pid="7cT5ezVu">接口缓存，避免资源过度消耗</blockquote><p data-pid="0DujG7h4">对于调用频率高、数据变化较小的接口，可以根据情况进行适当时间的缓存，第二次调取的时候直接取缓存加载，既可以优化接口任务队列，更能节省时间和资源。</p><p data-pid="mwKxrUtA">新建一个Map集合cachMap用于存放接口缓存集合，接口进行流程有所改变，如下图。请求A接口的时候，先判断是否有同样的请求存在于队列中，如有则取消，不同点在于，如若接口没有取消则判断接口则判断是否有缓存且处于有效期内，判断成功则返回缓存，反则队列新增接口，请求完成的时候将结果缓存，请求A移除队列。</p><figure data-size="normal"><noscript><img src="https://pic1.zhimg.com/v2-82ef4f4e1a9668ebaaa12303987f3298_b.jpg" data-caption="" data-size="normal" data-rawwidth="1481" data-rawheight="652" class="origin_image zh-lightbox-thumb" width="1481" data-original="https://pic1.zhimg.com/v2-82ef4f4e1a9668ebaaa12303987f3298_r.jpg"/></noscript><div><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1481' height='652'></svg>" data-caption="" data-size="normal" data-rawwidth="1481" data-rawheight="652" class="origin_image zh-lightbox-thumb lazy" width="1481" data-original="https://pic1.zhimg.com/v2-82ef4f4e1a9668ebaaa12303987f3298_r.jpg" data-actualsrc="https://pic1.zhimg.com/v2-82ef4f4e1a9668ebaaa12303987f3298_b.jpg" data-original-token="v2-62e4a2f6a203f20f62b97276bbf821ae"></div></figure><div class="highlight"><pre><code class="language-js"><span class="cm">/** axios封装 请求拦截、响应拦截 */</span>
+  <span class="kr">import</span> <span class="nx">axios</span> <span class="nx">from</span> <span class="s1">'axios'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">router</span> <span class="nx">from</span> <span class="s1">'../router'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">store</span> <span class="nx">from</span> <span class="s1">'../store/index'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">qs</span> <span class="nx">from</span> <span class="s1">'qs'</span><span class="p">;</span>
+  
+  <span class="kr">const</span> <span class="nx">CancelToken</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">CancelToken</span><span class="p">,</span>
+    <span class="nx">apiCach</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="nx">cachMap</span><span class="o">:</span> <span class="k">new</span> <span class="nx">Map</span><span class="p">()</span> <span class="cm">/** 缓存列表 */</span><span class="p">,</span>
+      <span class="nx">taskList</span><span class="o">:</span> <span class="p">[]</span> <span class="cm">/** 请求任务列表 */</span><span class="p">,</span>
+      <span class="cm">/** 新增任务 */</span>
+      <span class="nx">addTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span> <span class="nx">original</span><span class="o">:</span> <span class="sb">`</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">url</span><span class="si">}</span><span class="sb">&amp;</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">method</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span> <span class="nx">cancelToken</span> <span class="p">});</span>
+      <span class="p">},</span>
+      <span class="cm">/** 删除任务 */</span>
+      <span class="nx">deleteTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">start</span><span class="p">,</span> <span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cancel</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="k">in</span> <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="s1">'original'</span><span class="p">]</span> <span class="o">==</span> <span class="sb">`</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">url</span><span class="si">}</span><span class="sb">&amp;</span><span class="si">${</span><span class="nx">config</span><span class="p">.</span><span class="nx">method</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">cancelToken</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">taskList</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+            <span class="nx">cancel</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="k">break</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cancel</span> <span class="o">&amp;&amp;</span> <span class="nx">start</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">deleteCach</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">cancelToken</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="cm">/** 创建key */</span>
+      <span class="nx">createKey</span><span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+        <span class="nx">config</span><span class="p">.</span><span class="nx">url</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">str</span> <span class="o">+=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">url</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">method</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">str</span> <span class="o">+=</span> <span class="s1">',method:'</span> <span class="o">+</span> <span class="nx">config</span><span class="p">.</span><span class="nx">method</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">method</span> <span class="o">===</span> <span class="s1">'get'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">str</span> <span class="o">+=</span> <span class="s1">',data:'</span> <span class="o">+</span> <span class="nx">qs</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">params</span><span class="p">)</span> <span class="o">+</span> <span class="s1">''</span><span class="p">;</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">str</span> <span class="o">+=</span> <span class="s1">',data:'</span> <span class="o">+</span> <span class="nx">config</span><span class="p">.</span><span class="nx">data</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nx">str</span><span class="p">;</span>
+      <span class="p">},</span>
+      <span class="cm">/** 删除缓存 */</span>
+      <span class="nx">deleteCach</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">cancelToken</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">cachMap</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cachMap</span><span class="p">;</span>
+        <span class="kr">const</span> <span class="nx">key</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">createKey</span><span class="p">(</span><span class="nx">config</span><span class="p">),</span>
+          <span class="nx">now</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">();</span>
+        <span class="kd">let</span> <span class="nx">cach</span> <span class="o">=</span> <span class="nx">cachMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span> <span class="o">||</span> <span class="p">{};</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">cach</span> <span class="o">&amp;&amp;</span> <span class="nx">cach</span><span class="p">.</span><span class="nx">expirationTime</span> <span class="o">&amp;&amp;</span> <span class="nx">now</span> <span class="o">&lt;=</span> <span class="nx">cach</span><span class="p">.</span><span class="nx">deadline</span> <span class="o">&amp;&amp;</span> <span class="nx">cach</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">cach</span><span class="p">.</span><span class="nx">cach</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+          <span class="nx">cancelToken</span><span class="p">(</span><span class="nx">cach</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="cm">/** 新增缓存 */</span>
+      <span class="nx">addCach</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">cancel</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">const</span> <span class="nx">key</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">createKey</span><span class="p">(</span><span class="nx">config</span><span class="p">),</span>
+          <span class="nx">expirationTime</span> <span class="o">=</span> <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">expirationTime</span> <span class="o">||</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">expirationTime</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">cachMap</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="p">{</span> <span class="nx">expirationTime</span><span class="p">,</span> <span class="nx">deadline</span><span class="o">:</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">().</span><span class="nx">getTime</span><span class="p">()</span> <span class="o">+</span> <span class="nx">expirationTime</span><span class="p">,</span> <span class="nx">data</span><span class="o">:</span> <span class="s1">''</span><span class="p">,</span> <span class="nx">cancel</span> <span class="p">});</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="cm">/** 更新缓存 */</span>
+      <span class="nx">updateCach</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">res</span> <span class="o">||</span> <span class="o">!</span><span class="nx">res</span><span class="p">.</span><span class="nx">config</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="kr">const</span> <span class="nx">key</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">createKey</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">config</span><span class="p">),</span>
+          <span class="nx">oldVal</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cachMap</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">key</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">oldVal</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">cachMap</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="p">{</span> <span class="nx">expirationTime</span><span class="o">:</span> <span class="nx">oldVal</span><span class="p">.</span><span class="nx">expirationTime</span><span class="p">,</span> <span class="nx">deadline</span><span class="o">:</span> <span class="nx">oldVal</span><span class="p">.</span><span class="nx">deadline</span><span class="p">,</span> <span class="nx">data</span><span class="o">:</span> <span class="nx">res</span> <span class="p">});</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="cm">/** 创建axios实例 */</span>
+    <span class="nx">instance</span> <span class="o">=</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+      <span class="nx">timeout</span><span class="o">:</span> <span class="mi">1000</span> <span class="o">*</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="p">});</span>
+  
+  <span class="cm">/** 设置post请求头 */</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">defaults</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">post</span><span class="p">[</span><span class="s1">'Content-Type'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'application/x-www-form-urlencoded'</span><span class="p">;</span>
+  
+  <span class="cm">/** 请求拦截器*/</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">config</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">cancelToken</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">CancelToken</span><span class="p">((</span><span class="nx">c</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+        <span class="cm">/** 删除任务 | 缓存 */</span>
+        <span class="nx">apiCach</span><span class="p">.</span><span class="nx">deleteTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="kc">true</span><span class="p">,</span> <span class="nx">c</span><span class="p">);</span>
+        <span class="cm">/** 新增任务 | 缓存 */</span>
+        <span class="nx">apiCach</span><span class="p">.</span><span class="nx">addTask</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">c</span><span class="p">);</span>
+        <span class="nx">apiCach</span><span class="p">.</span><span class="nx">addCach</span><span class="p">(</span><span class="nx">config</span><span class="p">,</span> <span class="nx">c</span><span class="p">);</span>
+      <span class="p">});</span>
+      <span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">expirationTime</span> <span class="o">=</span> <span class="k">void</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="kd">let</span> <span class="nx">token</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">localStorage</span><span class="p">.</span><span class="nx">getItem</span><span class="p">(</span><span class="s1">'token'</span><span class="p">);</span>
+      <span class="nx">token</span> <span class="o">=</span> <span class="nx">token</span> <span class="o">?</span> <span class="nx">token</span> <span class="o">:</span> <span class="s1">''</span><span class="p">;</span>
+      <span class="nx">token</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">Authorization</span> <span class="o">=</span> <span class="nx">token</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nx">config</span><span class="p">;</span>
+    <span class="p">},</span>
+    <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">)</span>
+  <span class="p">);</span>
+  
+  <span class="cm">/** 响应拦截器 */</span>
+  <span class="nx">instance</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+    <span class="p">(</span><span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">apiCach</span><span class="p">.</span><span class="nx">deleteTask</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">config</span><span class="p">,</span> <span class="kc">false</span><span class="p">);</span>
+      <span class="nx">apiCach</span><span class="p">.</span><span class="nx">updateCach</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">res</span><span class="p">);</span>
+    <span class="p">},</span>
+    <span class="c1">// 请求失败
+  </span><span class="c1"></span>	<span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="p">{</span> <span class="nx">response</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">error</span><span class="p">;</span>
+        <span class="cm">/** 浏览器报错 */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span> <span class="o">==</span> <span class="mi">401</span> <span class="o">||</span> <span class="nx">response</span><span class="p">.</span><span class="nx">status</span> <span class="o">==</span> <span class="mi">403</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">localStorage</span><span class="p">.</span><span class="nx">removeItem</span><span class="p">(</span><span class="s1">'token'</span><span class="p">);</span>
+            <span class="nx">store</span><span class="p">.</span><span class="nx">commit</span><span class="p">(</span><span class="s1">'loginSuccess'</span><span class="p">,</span> <span class="kc">null</span><span class="p">);</span>
+            <span class="nx">router</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'/login'</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="o">===</span> <span class="s1">'string'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span><span class="p">,</span> <span class="nx">message</span><span class="o">:</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="p">};</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span> <span class="o">===</span> <span class="s1">'object'</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">response</span> <span class="o">=</span> <span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">response</span> <span class="o">=</span> <span class="p">{};</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">response</span> <span class="o">?</span> <span class="nx">response</span> <span class="o">:</span> <span class="p">{</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span> <span class="p">});</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">({</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">100002</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">);</span>
+  
+  <span class="kr">export</span> <span class="k">default</span> <span class="nx">instance</span><span class="p">;</span>
+  </code></pre></div><p data-pid="eAzWE7Ey">接口请求的时候，如果需要缓存需要在header里增加expirationTime(ms),代码如下。</p><div class="highlight"><pre><code class="language-js"><span class="k">return</span> <span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">'/example'</span><span class="p">,</span> <span class="nx">qs</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">params</span><span class="p">),</span> <span class="p">{</span> 
+    <span class="nx">headers</span><span class="o">:</span> <span class="p">{</span> 
+      <span class="nx">expirationTime</span> <span class="o">:</span> <span class="mi">60</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span><span class="c1">//缓存一分钟内有效
+  </span><span class="c1"></span>  <span class="p">}</span> 
+  <span class="p">});</span>
+  </code></pre></div><p data-pid="4nsezszd">接口请求的时候回重定义exprianTime字段为空。</p><p data-pid="GSYZvTOV">最后我还考虑过，如接口缓存时间较长，可以考虑将apiCach里的cachMap缓存于localstorage,然后定期更新,这样每次打开页面或者刷新的时候，也可以有效缓解首页加载速度，但是目前项目利用率不是很高，所以就没使用。</p><p data-pid="U3VK17yu">当然如果大家还有什么好的优化可以留言告诉我哦。</p></div>
