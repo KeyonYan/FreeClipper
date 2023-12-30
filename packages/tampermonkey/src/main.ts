@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { DomInspectElement } from 'free-clipper-core/src'
 import App from './App.vue'
 import 'virtual:uno.css'
 
@@ -12,3 +13,8 @@ createApp(App).mount(
     return app
   })(),
 )
+
+window.customElements.define('dom-inspector-component', DomInspectElement)
+
+const domInspectElement = document.createElement('dom-inspector-component')
+document.body.appendChild(domInspectElement)

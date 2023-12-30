@@ -5,7 +5,8 @@
   "license": "ISC",
   "keywords": [],
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "dev:chrome": "pnpm --filter=free-clipper-chrome-extension dev"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.6.0",
