@@ -6,9 +6,9 @@
   "keywords": [],
   "scripts": {
     "lint": "eslint .",
-    "dev:ce": "pnpm --filter=free-clipper-chrome-extension dev && pnpm run dev:core",
+    "dev:ce": "pnpm --filter=free-clipper-chrome-extension dev",
     "dev:core": "pnpm --filter=free-clipper-core dev",
-    "dev:us": "pnpm --filter=free-clipper-tampermonkey dev && pnpm run dev:core"
+    "dev:us": "pnpm --filter=free-clipper-tampermonkey dev"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.6.0",
