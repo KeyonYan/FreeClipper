@@ -9,5 +9,6 @@ export default defineConfig({
       formats: ['es'],
       fileName: 'index',
     },
+    emptyOutDir: false,
   },
 })
