@@ -2,49 +2,25 @@
   "name": "free-clipper-core",
   "type": "module",
   "version": "0.0.1",
-  "description": "鼠标定位页面上的元素",
   "author": "KeyonYan <yankeyu@shu.edu.cn>",
   "license": "MIT",
-  "homepage": "https://inspector.fe-dev.cn/",
   "repository": "git@github.com:KeyonYan/FreeClipper.git",
-  "bugs": {
-    "url": "https://github.com/KeyonYan/FreeClipper/issues"
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
   },
-  "keywords": [
-    "plugin",
-    "dom",
-    "inspector",
-    "inspect"
-  ],
-  "module": "./dist/client.js",
-  "files": [
-    "dist",
-    "types"
-  ],
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": ["dist"],
   "scripts": {
-    "dev": "vite",
-    "build:client": " vite build --config ./vite.client.config.ts",
-    "build:client:watch": " vite build --config ./vite.client.config.ts --watch",
-    "build": "tsc && pnpm build:client",
-    "build:watch": "tsc && pnpm build:clientsss",
-    "pub": "pnpm publish"
-  },
-  "dependencies": {
-    "@vue/compiler-dom": "^3.2.47",
-    "chalk": "^4.1.1",
-    "portfinder": "^1.0.28"
+    "dev:type": "tsc --watch",
+    "dev:lib": "vite build --watch",
+    "dev": "pnpm run '/dev:.*/'",
+    "postinstall": "pnpm build",
+    "build": "tsc && vite build"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.3",
-    "@babel/plugin-proposal-decorators": "^7.22.7",
-    "@babel/plugin-syntax-import-meta": "^7.10.4",
-    "@babel/plugin-transform-typescript": "^7.21.3",
-    "@types/node": "^18.14.1",
-    "@vue/babel-plugin-jsx": "^1.1.1",
-    "@vue/compiler-sfc": "^3.3.4",
-    "dotenv": "^16.1.4",
-    "lit": "^2.6.1",
-    "magic-string": "^0.30.0",
-    "vite-plugin-node-stdlib-browser": "^0.2.1"
+    "lit": "^2.6.1"
   }
 }

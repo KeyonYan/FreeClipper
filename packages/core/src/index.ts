@@ -1,1 +1,1 @@
-export { DomInspectElement } from './client'
+export { DomInspectElement } from './dom-inspector'

@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { DomInspectElement } from 'free-clipper-core/src'
+import { DomInspectElement } from 'free-clipper-core'
 import App from './App.vue'
 import 'virtual:uno.css'
 
