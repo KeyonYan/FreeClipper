@@ -3,22 +3,6 @@ import { property, query, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import tailwindInjectedCss from './tailwind.out.css?raw'
 
-const styleId = '__dom-inspector-unique-id'
-
-const MacHotKeyMap = {
-  ctrlKey: '^control',
-  altKey: '⌥option',
-  metaKey: '⌘command',
-  shiftKey: 'shift',
-}
-
-const WindowsHotKeyMap = {
-  ctrlKey: 'Ctrl',
-  altKey: 'Alt',
-  metaKey: '⊞Windows',
-  shiftKey: '⇧Shift',
-}
-
 // 兼容 chrome 最新版，获取 e.path
 export function composedPath(e: any) {
   // 存在则直接return
@@ -39,10 +23,13 @@ export function composedPath(e: any) {
 
 export class DomInspectElement extends LitElement {
   @property()
-  hotKeys: string = 'shiftKey,altKey'
+  toggleHotKey: string = 'KeyI'
 
   @property()
-  levelUpHotKeys: string = 'shiftKey,altKey,w'
+  levelUpHotKey: string = 'KeyW'
+
+  @property()
+  levelDownHotKey: string = 'KeyS'
 
   @property()
   showSwitch: boolean = true
@@ -50,37 +37,19 @@ export class DomInspectElement extends LitElement {
   @property()
   autoToggle: boolean = false
 
-  @property()
-  hideConsole: boolean = false
-
   @state()
   position = {
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
-    padding: {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    },
-    border: {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    },
-    margin: {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    },
+    padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    border: { top: 0, right: 0, bottom: 0, left: 0 },
+    margin: { top: 0, right: 0, bottom: 0, left: 0 },
   } // 弹窗位置
 
   @state()
-  element = { text: '' } // 选中节点信息
+  elementMeta: { text: string, e: HTMLElement | null } = { text: '', e: null } // 选中节点信息
 
   @state()
   infoClassName = { vertical: '', horizon: '' } // 信息浮块位置类名
@@ -89,7 +58,7 @@ export class DomInspectElement extends LitElement {
   infoWidth = '300px'
 
   @state()
-  show = false // 是否展示
+  showInspectContainer = false // 是否展示
 
   @state()
   dragging = false // 是否正在拖拽中
@@ -98,7 +67,7 @@ export class DomInspectElement extends LitElement {
   mousePosition = { baseX: 0, baseY: 0, moveX: 0, moveY: 0 }
 
   @state()
-  open = false // 点击开关打开
+  protected enableInspect = false // 点击开关打开
 
   @state()
   moved = false
@@ -112,17 +81,6 @@ export class DomInspectElement extends LitElement {
   @query('#inspector-switch')
   inspectorSwitchRef!: HTMLDivElement
 
-  isTracking = (keys: string, e: any) => {
-    return (
-      keys.split(',').every(key => e[key.trim()])
-    )
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback()
-    console.log('connectedCallback')
-  }
-
   // 20px -> 20
   getDomPropertyValue = (target: HTMLElement, property: string) => {
     const computedStyle = window.getComputedStyle(target)
@@ -130,8 +88,11 @@ export class DomInspectElement extends LitElement {
   }
 
   // 渲染遮罩层
-  renderCover = (target: HTMLElement) => {
-    // 设置 target 的位置
+  renderCover = () => {
+    if (!this.elementMeta.e)
+      return
+
+    const target = this.elementMeta.e
     const { top, right, bottom, left } = target.getBoundingClientRect()
     this.position = {
       top,
@@ -160,15 +121,10 @@ export class DomInspectElement extends LitElement {
     const browserHeight = document.documentElement.clientHeight // 浏览器高度
     const browserWidth = document.documentElement.clientWidth // 浏览器宽度
     // 自动调整信息弹出位置
-    const bottomToViewPort
-      = browserHeight
-      - bottom
-      - this.getDomPropertyValue(target, 'margin-bottom') // 距浏览器视口底部距离
-    const rightToViewPort
-      = browserWidth - right - this.getDomPropertyValue(target, 'margin-right') // 距浏览器右边距离
+    const bottomToViewPort = browserHeight - bottom - this.getDomPropertyValue(target, 'margin-bottom') // 距浏览器视口底部距离
+    const rightToViewPort = browserWidth - right - this.getDomPropertyValue(target, 'margin-right') // 距浏览器右边距离
     const topToViewPort = top - this.getDomPropertyValue(target, 'margin-top')
-    const leftToViewPort
-      = left - this.getDomPropertyValue(target, 'margin-left')
+    const leftToViewPort = left - this.getDomPropertyValue(target, 'margin-left')
     this.infoClassName = {
       vertical:
         topToViewPort > bottomToViewPort
@@ -183,51 +139,24 @@ export class DomInspectElement extends LitElement {
           ? 'element-info-right'
           : 'element-info-left',
     }
-    this.infoWidth
-      = `${Math.max(
-        right
-        - left
-        + this.getDomPropertyValue(target, 'margin-right')
-        + this.getDomPropertyValue(target, 'margin-left'),
-        300,
-      )}px`
-    // 增加鼠标光标样式
-    this.addGlobalCursorStyle()
+    this.infoWidth = `${Math.max(right - left + this.getDomPropertyValue(target, 'margin-right') + this.getDomPropertyValue(target, 'margin-left'), 300)}px`
     // 防止 select
     if (!this.preUserSelect)
       this.preUserSelect = getComputedStyle(document.body).userSelect
 
     document.body.style.userSelect = 'none'
     // 获取元素信息
-    this.show = true
+    this.showInspectContainer = true
   }
 
   removeCover = () => {
-    this.show = false
-    this.removeGlobalCursorStyle()
+    this.showInspectContainer = false
     document.body.style.userSelect = this.preUserSelect
     this.preUserSelect = ''
   }
 
-  addGlobalCursorStyle = () => {
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style')
-      style.setAttribute('id', styleId)
-      style.textContent = `body * {
-        cursor: pointer !important;
-      }`
-      document.body.appendChild(style)
-    }
-  }
-
-  removeGlobalCursorStyle = () => {
-    const style = document.getElementById(styleId)
-    if (style)
-      style.remove()
-  }
-
   // 移动按钮
-  moveSwitch = (e: MouseEvent) => {
+  handleSwitchMove = (e: MouseEvent) => {
     if (composedPath(e).includes(this))
       this.hoverSwitch = true
     else
@@ -236,24 +165,19 @@ export class DomInspectElement extends LitElement {
     // 判断是否在拖拽按钮
     if (this.dragging) {
       this.moved = true
-      this.inspectorSwitchRef.style.left
-        = `${this.mousePosition.baseX + (e.pageX - this.mousePosition.moveX)}px`
-      this.inspectorSwitchRef.style.top
-        = `${this.mousePosition.baseY + (e.pageY - this.mousePosition.moveY)}px`
+      this.inspectorSwitchRef.style.left = `${this.mousePosition.baseX + (e.pageX - this.mousePosition.moveX)}px`
+      this.inspectorSwitchRef.style.top = `${this.mousePosition.baseY + (e.pageY - this.mousePosition.moveY)}px`
     }
   }
 
   // 鼠标移动渲染遮罩层位置
   handleMouseMove = (e: MouseEvent) => {
-    if (
-      ((this.hotKeys && this.isTracking(this.hotKeys, e) && !this.dragging) || this.open)
-      && !this.hoverSwitch
-    ) {
+    if (!this.dragging && this.enableInspect && !this.hoverSwitch) {
       const targetNode = e.target as HTMLElement
       if (targetNode) {
-        // console.log('text: ', targetNode.innerText)
-        this.element.text = targetNode.textContent ?? ''
-        this.renderCover(targetNode as HTMLElement)
+        this.elementMeta.text = targetNode.textContent ?? ''
+        this.elementMeta.e = targetNode
+        this.renderCover()
       }
     }
     else {
@@ -263,58 +187,24 @@ export class DomInspectElement extends LitElement {
 
   // 鼠标点击唤醒遮罩层
   handleMouseClick = (e: MouseEvent) => {
-    if (this.isTracking(this.hotKeys, e) || this.open) {
-      if (this.show) {
+    if (this.enableInspect) {
+      if (this.showInspectContainer) {
         // 阻止冒泡
         e.stopPropagation()
         // 阻止默认事件
         e.preventDefault()
         // 剪藏
-        const targetNode = e.target as HTMLElement
-        targetNode.style.display = 'none'
+
         // 清除遮罩层
         this.removeCover()
         if (this.autoToggle)
-          this.open = false
+          this.enableInspect = false
       }
     }
   }
 
-  // 监听键盘抬起，清除遮罩层
-  handleKeyUp = (e: any) => {
-    if (!this.isTracking(this.hotKeys, e) && !this.open)
-      this.removeCover()
-  }
-
-  // 打印功能提示信息
-  printTip = () => {
-    const agent = navigator.userAgent.toLowerCase()
-    const isWindows = ['windows', 'win32', 'wow32', 'win64', 'wow64'].some(
-      item => agent.match(item),
-    )
-    const hotKeyMap = isWindows ? WindowsHotKeyMap : MacHotKeyMap
-    const keys = this.hotKeys
-      .split(',')
-      .map(item => `%c${hotKeyMap[item.trim() as keyof typeof hotKeyMap]}`)
-    const colorCount = keys.length * 2 + 1
-    const colors = Array(colorCount)
-      .fill('')
-      .map((_, index) => {
-        if (index % 2 === 0)
-          return 'color: #42b983; font-weight: bold; font-family: PingFang SC;'
-        else
-          return 'color: #006aff; font-weight: bold; font-family: PingFang SC;'
-      })
-    console.log(
-      `%c同时按住 [${keys.join(
-        ' %c+ ',
-      )}%c] 时启用 inspector 功能(点击页面元素可定位至编辑器源代码)`,
-      ...colors,
-    )
-  }
-
   // 记录鼠标按下时初始位置
-  recordMousePosition = (e: MouseEvent) => {
+  handleRecordSwitchPosition = (e: MouseEvent) => {
     this.mousePosition = {
       baseX: this.inspectorSwitchRef.offsetLeft,
       baseY: this.inspectorSwitchRef.offsetTop,
@@ -331,66 +221,75 @@ export class DomInspectElement extends LitElement {
   }
 
   // 切换开关
-  switch = (e: Event) => {
+  handleClickSwitch = (e: Event) => {
     if (!this.moved) {
-      this.open = !this.open
+      this.enableInspect = !this.enableInspect
       e.preventDefault()
       e.stopPropagation()
     }
     this.moved = false
   }
 
-  protected firstUpdated(): void {
-    console.log('this.inspectorSwitchRef: ', this.inspectorSwitchRef)
-    console.log('firstUpdated')
-    if (!this.hideConsole)
-      this.printTip()
-
-    window.addEventListener('mousemove', this.handleMouseMove)
-    window.addEventListener('mousemove', this.moveSwitch)
-    window.addEventListener('click', this.handleMouseClick, true)
-    document.addEventListener('keyup', this.handleKeyUp)
-    document.addEventListener('mouseleave', this.removeCover)
-    document.addEventListener('mouseup', this.handleMouseUp)
-    this.inspectorSwitchRef.addEventListener(
-      'mousedown',
-      this.recordMousePosition,
-    )
-    this.inspectorSwitchRef.addEventListener('click', this.switch)
+  handleHotKeyPress = (e: KeyboardEvent) => {
+    if (e.code === this.toggleHotKey)
+      this.enableInspect = true
   }
 
-  disconnectedCallback(): void {
+  handleHotKeyDown = (e: KeyboardEvent) => {
+    if (e.code === this.levelDownHotKey) {
+      console.log(this.elementMeta.e?.parentElement)
+      this.elementMeta.e = this.elementMeta.e?.parentElement ?? this.elementMeta.e
+    }
+    if (e.code === this.levelUpHotKey) {
+      console.log(this.elementMeta.e?.children)
+      this.elementMeta.e = (this.elementMeta.e?.children[0] as HTMLElement) ?? this.elementMeta.e
+    }
+  }
+
+  handleHotKeyUp = (e: KeyboardEvent) => {
+    if (e.code === this.toggleHotKey)
+      this.enableInspect = false
+  }
+
+  registerHotKey() {
+    document.addEventListener('keypress', this.handleHotKeyPress)
+    document.addEventListener('keydown', this.handleHotKeyDown)
+    document.addEventListener('keyup', this.handleHotKeyUp)
+  }
+
+  unregisterHotKey() {
+    document.removeEventListener('keypress', this.handleHotKeyPress)
+    document.removeEventListener('keydown', this.handleHotKeyDown)
+    document.removeEventListener('keyup', this.handleHotKeyUp)
+  }
+
+  protected firstUpdated() {
+    window.addEventListener('mousemove', this.handleMouseMove)
+    window.addEventListener('mousemove', this.handleSwitchMove)
+    document.addEventListener('click', this.handleMouseClick, true)
+    document.addEventListener('mouseleave', this.removeCover)
+    document.addEventListener('mouseup', this.handleMouseUp)
+
+    this.registerHotKey()
+  }
+
+  disconnectedCallback() {
     window.removeEventListener('mousemove', this.handleMouseMove)
-    window.removeEventListener('mousemove', this.moveSwitch)
-    window.removeEventListener('click', this.handleMouseClick, true)
-    document.removeEventListener('keyup', this.handleKeyUp)
+    window.removeEventListener('mousemove', this.handleSwitchMove)
+    document.removeEventListener('click', this.handleMouseClick, true)
     document.removeEventListener('mouseleave', this.removeCover)
     document.removeEventListener('mouseup', this.handleMouseUp)
-    this.inspectorSwitchRef
-      && this.inspectorSwitchRef.removeEventListener(
-        'mousedown',
-        this.recordMousePosition,
-      )
-    this.inspectorSwitchRef.removeEventListener('click', this.switch)
+
+    this.unregisterHotKey()
   }
 
   render() {
     const containerPosition = {
-      display: this.show ? 'block' : 'none',
+      display: this.elementMeta.e ? 'block' : 'none',
       top: `${this.position.top - this.position.margin.top}px`,
       left: `${this.position.left - this.position.margin.left}px`,
-      height: `${
-        this.position.bottom
-          - this.position.top
-          + this.position.margin.bottom
-          + this.position.margin.top
-      }px`,
-      width: `${
-        this.position.right
-          - this.position.left
-          + this.position.margin.right
-          + this.position.margin.left
-      }px`,
+      height: `${this.position.bottom - this.position.top + this.position.margin.bottom + this.position.margin.top}px`,
+      width: `${this.position.right - this.position.left + this.position.margin.right + this.position.margin.left}px`,
     }
     const marginPosition = {
       borderTopWidth: `${this.position.margin.top}px`,
@@ -425,15 +324,14 @@ export class DomInspectElement extends LitElement {
         </div>
         <div
           id="element-info"
-          class="element-info ${this.infoClassName.vertical} ${this
-            .infoClassName.horizon}"
+          class="element-info ${this.infoClassName.vertical} ${this.infoClassName.horizon}"
           style=${styleMap({ width: this.infoWidth })}
         >
           <div class="element-info-content">
             <div class="name-line">
               <div class="element-name">
                 <span class="element-tip">Click to Clip</span>
-                <span class="element-title">&lt;${this.element.text}&gt;</span>
+                <span class="element-title">&lt;${this.elementMeta.text}&gt;</span>
               </div>
             </div>
           </div>
@@ -441,13 +339,11 @@ export class DomInspectElement extends LitElement {
       </div>
       <div
         id="inspector-switch"
-        class="inspector-switch ${this.open
-          ? 'active-inspector-switch'
-          : ''} ${this.moved ? 'move-inspector-switch' : ''} bg-slate-300 border"
-        style=${styleMap({ display: this.showSwitch ? 'flex' : 'none' })}
+        @click="${this.handleClickSwitch}"
+        @mousedown="${this.handleRecordSwitchPosition}"
+        class="fixed z-[999] p-2 rounded-full shadow-lg border-gray-500 top-10 left-1/2 -translate-x-1/2 cursor-pointer ${this.enableInspect ? 'text-blue-700' : ''} bg-slate-300 border ${this.showSwitch ? 'flex' : 'hidden'}"
       >
-        ${this.open ? 'close' : 'open'}
-
+       OP: ${this.enableInspect}
       </div>
     `
   }
@@ -456,8 +352,7 @@ export class DomInspectElement extends LitElement {
   .dom-inspector-container {
     position: fixed;
     pointer-events: none;
-    z-index: 999999;
-    font-family: 'PingFang SC';
+    z-index: 9999;
     .margin-overlay {
       position: absolute;
       inset: 0;
@@ -526,27 +421,8 @@ export class DomInspectElement extends LitElement {
   .element-name .element-tip {
     color: #006aff;
   }
-  .path-line {
-    color: #333;
-    line-height: 12px;
-    margin-top: 4px;
-  }
-  .inspector-switch {
-    position: fixed;
-    z-index: 9999999;
-    top: 16px;
-    left: 50%;
-    font-size: 22px;
-    transform: translateX(-50%);
-   
-    cursor: pointer;
-  }
-  .active-inspector-switch {
-    color: #006aff;
-  }
-  .move-inspector-switch {
-    cursor: move;
-  }
+
+
 `
 
   static styles = [this.userStyles, unsafeCSS(tailwindInjectedCss)]
