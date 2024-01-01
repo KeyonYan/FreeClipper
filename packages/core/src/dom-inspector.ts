@@ -1,3 +1,4 @@
+import type { PropertyValueMap } from 'lit'
 import { LitElement, css, html, unsafeCSS } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
@@ -21,9 +22,21 @@ export function composedPath(e: any) {
   return e.path
 }
 
+function getDomPropertyValue(target: HTMLElement, property: string) {
+  const computedStyle = window.getComputedStyle(target)
+  return computedStyle.getPropertyValue(property)
+}
+
+function getBatchDomPropertyValue(target: HTMLElement, properties: string[]) {
+  const result: string[] = []
+  for (const property of properties)
+    result.push(getDomPropertyValue(target, property))
+  return result
+}
+
 export class DomInspectElement extends LitElement {
   @property()
-  toggleHotKey: string = 'KeyI'
+  toggleHotKey: string = 'KeyQ'
 
   @property()
   levelUpHotKey: string = 'KeyW'
@@ -34,28 +47,19 @@ export class DomInspectElement extends LitElement {
   @property()
   showSwitch: boolean = true
 
-  @property()
-  autoToggle: boolean = false
-
   @state()
-  position = {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    padding: { top: 0, right: 0, bottom: 0, left: 0 },
-    border: { top: 0, right: 0, bottom: 0, left: 0 },
-    margin: { top: 0, right: 0, bottom: 0, left: 0 },
+  position: Record<'container' | 'margin' | 'border' | 'padding', Record<string, string>> = {
+    container: {},
+    margin: {},
+    border: {},
+    padding: {},
   } // 弹窗位置
 
   @state()
-  elementMeta: { text: string, e: HTMLElement | null } = { text: '', e: null } // 选中节点信息
+  hoveredElement: HTMLElement | null = null
 
   @state()
   infoClassName = { vertical: '', horizon: '' } // 信息浮块位置类名
-
-  @state()
-  infoWidth = '300px'
 
   @state()
   showInspectContainer = false // 是否展示
@@ -81,50 +85,66 @@ export class DomInspectElement extends LitElement {
   @query('#inspector-switch')
   inspectorSwitchRef!: HTMLDivElement
 
-  // 20px -> 20
-  getDomPropertyValue = (target: HTMLElement, property: string) => {
-    const computedStyle = window.getComputedStyle(target)
-    return Number(computedStyle.getPropertyValue(property).replace('px', ''))
-  }
-
   // 渲染遮罩层
   renderCover = () => {
-    if (!this.elementMeta.e)
+    if (!this.hoveredElement) {
+      this.showInspectContainer = false
+      document.body.style.userSelect = this.preUserSelect
+      this.preUserSelect = ''
       return
+    }
 
-    const target = this.elementMeta.e
+    this.showInspectContainer = true
+    if (!this.preUserSelect)
+      this.preUserSelect = getComputedStyle(document.body).userSelect
+    document.body.style.userSelect = 'none'
+
+    const target = this.hoveredElement
     const { top, right, bottom, left } = target.getBoundingClientRect()
+
+    const [bt, br, bb, bl] = getBatchDomPropertyValue(target, ['border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width'])
+    const [pt, pr, pb, pl] = getBatchDomPropertyValue(target, ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'])
+    const [mt, mr, mb, ml] = getBatchDomPropertyValue(target, ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'])
+
     this.position = {
-      top,
-      right,
-      bottom,
-      left,
-      border: {
-        top: this.getDomPropertyValue(target, 'border-top-width'),
-        right: this.getDomPropertyValue(target, 'border-right-width'),
-        bottom: this.getDomPropertyValue(target, 'border-bottom-width'),
-        left: this.getDomPropertyValue(target, 'border-left-width'),
-      },
-      padding: {
-        top: this.getDomPropertyValue(target, 'padding-top'),
-        right: this.getDomPropertyValue(target, 'padding-right'),
-        bottom: this.getDomPropertyValue(target, 'padding-bottom'),
-        left: this.getDomPropertyValue(target, 'padding-left'),
+      container: {
+        '--top': `${top}px`,
+        '--left': `${left}px`,
+        '--bottom': `${bottom}px`,
+        '--right': `${right}px`,
+        '--mt': mt,
+        '--mr': mr,
+        '--mb': mb,
+        '--ml': ml,
+        '--bt': bt,
+        '--br': br,
+        '--bb': bb,
+        '--bl': bl,
+        '--pt': pt,
+        '--pr': pr,
+        '--pb': pb,
+        '--pl': pl,
+        'top': `calc(var(--top) - var(--mt))`,
+        'left': `calc(var(--left) - var(--ml))`,
+        'height': `calc(var(--bottom) - var(--top) + var(--mb) + var(--mt))`,
+        'width': `calc(var(--right) - var(--left) + var(--mr) + var(--ml))`,
       },
       margin: {
-        top: this.getDomPropertyValue(target, 'margin-top'),
-        right: this.getDomPropertyValue(target, 'margin-right'),
-        bottom: this.getDomPropertyValue(target, 'margin-bottom'),
-        left: this.getDomPropertyValue(target, 'margin-left'),
+        'border-width': `var(--mt) var(--mr) var(--mb) var(--ml)`,
+      },
+      border: {
+        'border-width': `var(--bt) var(--br) var(--bb) var(--bl)`,
+      },
+      padding: {
+        'border-width': `var(--pt) var(--pr) var(--pb) var(--pl)`,
       },
     }
     const browserHeight = document.documentElement.clientHeight // 浏览器高度
-    const browserWidth = document.documentElement.clientWidth // 浏览器宽度
     // 自动调整信息弹出位置
-    const bottomToViewPort = browserHeight - bottom - this.getDomPropertyValue(target, 'margin-bottom') // 距浏览器视口底部距离
-    const rightToViewPort = browserWidth - right - this.getDomPropertyValue(target, 'margin-right') // 距浏览器右边距离
-    const topToViewPort = top - this.getDomPropertyValue(target, 'margin-top')
-    const leftToViewPort = left - this.getDomPropertyValue(target, 'margin-left')
+    const bottomToViewPort = browserHeight - bottom - Number(mb.replace('px', ''))
+
+    const topToViewPort = top - Number(mt.replace('px', ''))
+
     this.infoClassName = {
       vertical:
         topToViewPort > bottomToViewPort
@@ -134,25 +154,17 @@ export class DomInspectElement extends LitElement {
           : bottomToViewPort < 100
             ? 'element-info-bottom-inner'
             : 'element-info-bottom',
-      horizon:
-        leftToViewPort >= rightToViewPort
-          ? 'element-info-right'
-          : 'element-info-left',
+      horizon: '',
     }
-    this.infoWidth = `${Math.max(right - left + this.getDomPropertyValue(target, 'margin-right') + this.getDomPropertyValue(target, 'margin-left'), 300)}px`
-    // 防止 select
-    if (!this.preUserSelect)
-      this.preUserSelect = getComputedStyle(document.body).userSelect
+  }
 
-    document.body.style.userSelect = 'none'
-    // 获取元素信息
-    this.showInspectContainer = true
+  protected willUpdate(changedProperties: PropertyValueMap<this>): void {
+    if (changedProperties.has('hoveredElement'))
+      this.renderCover()
   }
 
   removeCover = () => {
-    this.showInspectContainer = false
-    document.body.style.userSelect = this.preUserSelect
-    this.preUserSelect = ''
+    this.hoveredElement = null
   }
 
   // 移动按钮
@@ -174,11 +186,8 @@ export class DomInspectElement extends LitElement {
   handleMouseMove = (e: MouseEvent) => {
     if (!this.dragging && this.enableInspect && !this.hoverSwitch) {
       const targetNode = e.target as HTMLElement
-      if (targetNode) {
-        this.elementMeta.text = targetNode.textContent ?? ''
-        this.elementMeta.e = targetNode
-        this.renderCover()
-      }
+      if (targetNode)
+        this.hoveredElement = targetNode
     }
     else {
       this.removeCover()
@@ -187,19 +196,16 @@ export class DomInspectElement extends LitElement {
 
   // 鼠标点击唤醒遮罩层
   handleMouseClick = (e: MouseEvent) => {
-    if (this.enableInspect) {
-      if (this.showInspectContainer) {
-        // 阻止冒泡
-        e.stopPropagation()
-        // 阻止默认事件
-        e.preventDefault()
-        // 剪藏
+    if (this.enableInspect && this.showInspectContainer) {
+      // 阻止冒泡
+      e.stopPropagation()
+      // 阻止默认事件
+      e.preventDefault()
+      // 剪藏
 
-        // 清除遮罩层
-        this.removeCover()
-        if (this.autoToggle)
-          this.enableInspect = false
-      }
+      // 清除遮罩层
+      this.hoveredElement = null
+      this.enableInspect = false
     }
   }
 
@@ -236,14 +242,11 @@ export class DomInspectElement extends LitElement {
   }
 
   handleHotKeyDown = (e: KeyboardEvent) => {
-    if (e.code === this.levelDownHotKey) {
-      console.log(this.elementMeta.e?.parentElement)
-      this.elementMeta.e = this.elementMeta.e?.parentElement ?? this.elementMeta.e
-    }
-    if (e.code === this.levelUpHotKey) {
-      console.log(this.elementMeta.e?.children)
-      this.elementMeta.e = (this.elementMeta.e?.children[0] as HTMLElement) ?? this.elementMeta.e
-    }
+    if (e.code === this.levelDownHotKey)
+      this.hoveredElement = this.hoveredElement?.parentElement ?? this.hoveredElement
+
+    if (e.code === this.levelUpHotKey)
+      this.hoveredElement = (this.hoveredElement?.children[0] as HTMLElement) ?? this.hoveredElement
   }
 
   handleHotKeyUp = (e: KeyboardEvent) => {
@@ -263,77 +266,50 @@ export class DomInspectElement extends LitElement {
     document.removeEventListener('keyup', this.handleHotKeyUp)
   }
 
-  protected firstUpdated() {
+  registerInspector() {
     window.addEventListener('mousemove', this.handleMouseMove)
-    window.addEventListener('mousemove', this.handleSwitchMove)
     document.addEventListener('click', this.handleMouseClick, true)
     document.addEventListener('mouseleave', this.removeCover)
-    document.addEventListener('mouseup', this.handleMouseUp)
+  }
 
+  unregisterInspector() {
+    window.removeEventListener('mousemove', this.handleMouseMove)
+    document.removeEventListener('click', this.handleMouseClick, true)
+    document.removeEventListener('mouseleave', this.removeCover)
+  }
+
+  protected firstUpdated() {
+    window.addEventListener('mousemove', this.handleSwitchMove)
+    document.addEventListener('mouseup', this.handleMouseUp)
+    this.registerInspector()
     this.registerHotKey()
   }
 
   disconnectedCallback() {
-    window.removeEventListener('mousemove', this.handleMouseMove)
     window.removeEventListener('mousemove', this.handleSwitchMove)
-    document.removeEventListener('click', this.handleMouseClick, true)
-    document.removeEventListener('mouseleave', this.removeCover)
     document.removeEventListener('mouseup', this.handleMouseUp)
-
+    this.unregisterInspector()
     this.unregisterHotKey()
   }
 
   render() {
-    const containerPosition = {
-      display: this.elementMeta.e ? 'block' : 'none',
-      top: `${this.position.top - this.position.margin.top}px`,
-      left: `${this.position.left - this.position.margin.left}px`,
-      height: `${this.position.bottom - this.position.top + this.position.margin.bottom + this.position.margin.top}px`,
-      width: `${this.position.right - this.position.left + this.position.margin.right + this.position.margin.left}px`,
-    }
-    const marginPosition = {
-      borderTopWidth: `${this.position.margin.top}px`,
-      borderRightWidth: `${this.position.margin.right}px`,
-      borderBottomWidth: `${this.position.margin.bottom}px`,
-      borderLeftWidth: `${this.position.margin.left}px`,
-    }
-    const borderPosition = {
-      borderTopWidth: `${this.position.border.top}px`,
-      borderRightWidth: `${this.position.border.right}px`,
-      borderBottomWidth: `${this.position.border.bottom}px`,
-      borderLeftWidth: `${this.position.border.left}px`,
-    }
-    const paddingPosition = {
-      borderTopWidth: `${this.position.padding.top}px`,
-      borderRightWidth: `${this.position.padding.right}px`,
-      borderBottomWidth: `${this.position.padding.bottom}px`,
-      borderLeftWidth: `${this.position.padding.left}px`,
-    }
     return html`
       <div
-        class="dom-inspector-container"
-        id="dom-inspector-container"
-        style=${styleMap(containerPosition)}
+        class="pointer-events-none transition-all fixed z-[99999] border border-blue-500 rounded-sm ${this.hoveredElement ? 'block' : 'hidden'}"
+        style=${styleMap(this.position.container)}
       >
-        <div class="margin-overlay" style=${styleMap(marginPosition)}>
-          <div class="border-overlay" style=${styleMap(borderPosition)}>
-            <div class="padding-overlay" style=${styleMap(paddingPosition)}>
-              <div class="content-overlay"></div>
+        <div class="border-[rgba(255,155,0,0.3)] absolute inset-0" style=${styleMap(this.position.margin)}>
+          <div class="border-[rgba(255,200,50,0.3)] absolute inset-0" style=${styleMap(this.position.border)}>
+            <div class="border-[rgba(77,200,0,0.3)] absolute inset-0" style=${styleMap(this.position.padding)}>
+              <div class="bg-[rgba(120,170,210,0.7)] absolute inset-0"></div>
             </div>
           </div>
         </div>
         <div
-          id="element-info"
-          class="element-info ${this.infoClassName.vertical} ${this.infoClassName.horizon}"
-          style=${styleMap({ width: this.infoWidth })}
+          class="absolute ${this.infoClassName.vertical} left-1/2 -translate-x-1/2"
         >
-          <div class="element-info-content">
-            <div class="name-line">
-              <div class="element-name">
-                <span class="element-tip">Click to Clip</span>
-                <span class="element-title">&lt;${this.elementMeta.text}&gt;</span>
-              </div>
-            </div>
+          <div class="max-w-full text-sm bg-sky-600 text-white break-all shadow py-1 px-2 rounded">
+            Click to Clip ${this.hoveredElement?.className}
           </div>
         </div>
       </div>
@@ -349,48 +325,6 @@ export class DomInspectElement extends LitElement {
   }
 
   static userStyles = css`
-  .dom-inspector-container {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    .margin-overlay {
-      position: absolute;
-      inset: 0;
-      border-style: solid;
-      border-color: rgba(255, 155, 0, 0.3);
-      .border-overlay {
-        position: absolute;
-        inset: 0;
-        border-style: solid;
-        border-color: rgba(255, 200, 50, 0.3);
-        .padding-overlay {
-          position: absolute;
-          inset: 0;
-          border-style: solid;
-          border-color: rgba(77, 200, 0, 0.3);
-          .content-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(120, 170, 210, 0.7);
-          }
-        }
-      }
-    }
-  }
-  .element-info {
-    position: absolute;
-  }
-  .element-info-content {
-    max-width: 100%;
-    font-size: 12px;
-    color: #000;
-    background-color: #fff;
-    word-break: break-all;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-    box-sizing: border-box;
-    padding: 4px 8px;
-    border-radius: 4px;
-  }
   .element-info-top {
     top: -4px;
     transform: translateY(-100%);
@@ -404,25 +338,6 @@ export class DomInspectElement extends LitElement {
   .element-info-bottom-inner {
     bottom: 4px;
   }
-  .element-info-left {
-    left: 0;
-    display: flex;
-    justify-content: flex-start;
-  }
-  .element-info-right {
-    right: 0;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .element-name .element-title {
-    color: coral;
-    font-weight: bold;
-  }
-  .element-name .element-tip {
-    color: #006aff;
-  }
-
-
 `
 
   static styles = [this.userStyles, unsafeCSS(tailwindInjectedCss)]
