@@ -24,6 +24,7 @@
     "build": "tailwindcss -i ./tailwind.css -o ./src/tailwind.out.css && tsc && vite build"
   },
   "devDependencies": {
+    "@notionhq/client": "^2.2.14",
     "lit": "^2.6.1",
     "tailwindcss": "^3.4.0"
   }
