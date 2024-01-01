@@ -1,26 +1,8 @@
 import type { PropertyValueMap } from 'lit'
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import tailwindInjectedCss from './tailwind.out.css?raw'
-
-// 兼容 chrome 最新版，获取 e.path
-export function composedPath(e: any) {
-  // 存在则直接return
-  if (e.path)
-    return e.path
-
-  // 不存在则遍历target节点
-  let target = e.target
-  e.path = []
-  while (target.parentNode !== null) {
-    e.path.push(target)
-    target = target.parentNode
-  }
-  // 最后补上document和window
-  e.path.push(document, window)
-  return e.path
-}
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -44,9 +26,6 @@ export class DomInspectElement extends LitElement {
   @property()
   levelDownHotKey: string = 'KeyS'
 
-  @property()
-  showSwitch: boolean = true
-
   @state()
   position: Record<'container' | 'margin' | 'border' | 'padding', Record<string, string>> = {
     container: {},
@@ -65,25 +44,13 @@ export class DomInspectElement extends LitElement {
   showInspectContainer = false // 是否展示
 
   @state()
-  dragging = false // 是否正在拖拽中
-
-  @state()
-  mousePosition = { baseX: 0, baseY: 0, moveX: 0, moveY: 0 }
-
-  @state()
   protected enableInspect = false // 点击开关打开
-
-  @state()
-  moved = false
 
   @state()
   hoverSwitch = false
 
   @state()
   preUserSelect = ''
-
-  @query('#inspector-switch')
-  inspectorSwitchRef!: HTMLDivElement
 
   // 渲染遮罩层
   renderCover = () => {
@@ -167,24 +134,9 @@ export class DomInspectElement extends LitElement {
     this.hoveredElement = null
   }
 
-  // 移动按钮
-  handleSwitchMove = (e: MouseEvent) => {
-    if (composedPath(e).includes(this))
-      this.hoverSwitch = true
-    else
-      this.hoverSwitch = false
-
-    // 判断是否在拖拽按钮
-    if (this.dragging) {
-      this.moved = true
-      this.inspectorSwitchRef.style.left = `${this.mousePosition.baseX + (e.pageX - this.mousePosition.moveX)}px`
-      this.inspectorSwitchRef.style.top = `${this.mousePosition.baseY + (e.pageY - this.mousePosition.moveY)}px`
-    }
-  }
-
   // 鼠标移动渲染遮罩层位置
   handleMouseMove = (e: MouseEvent) => {
-    if (!this.dragging && this.enableInspect && !this.hoverSwitch) {
+    if (this.enableInspect && !this.hoverSwitch) {
       const targetNode = e.target as HTMLElement
       if (targetNode)
         this.hoveredElement = targetNode
@@ -197,11 +149,10 @@ export class DomInspectElement extends LitElement {
   // 鼠标点击唤醒遮罩层
   handleMouseClick = (e: MouseEvent) => {
     if (this.enableInspect && this.showInspectContainer) {
-      // 阻止冒泡
       e.stopPropagation()
-      // 阻止默认事件
       e.preventDefault()
-      // 剪藏
+      // TODO: 剪藏
+      alert(this.hoveredElement?.textContent)
 
       // 清除遮罩层
       this.hoveredElement = null
@@ -209,31 +160,11 @@ export class DomInspectElement extends LitElement {
     }
   }
 
-  // 记录鼠标按下时初始位置
-  handleRecordSwitchPosition = (e: MouseEvent) => {
-    this.mousePosition = {
-      baseX: this.inspectorSwitchRef.offsetLeft,
-      baseY: this.inspectorSwitchRef.offsetTop,
-      moveX: e.pageX,
-      moveY: e.pageY,
-    }
-    this.dragging = true
-    e.preventDefault()
-  }
-
-  // 结束拖拽
-  handleMouseUp = () => {
-    this.dragging = false
-  }
-
   // 切换开关
   handleClickSwitch = (e: Event) => {
-    if (!this.moved) {
-      this.enableInspect = !this.enableInspect
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    this.moved = false
+    e.preventDefault()
+    e.stopPropagation()
+    this.enableInspect = !this.enableInspect
   }
 
   handleHotKeyPress = (e: KeyboardEvent) => {
@@ -279,15 +210,11 @@ export class DomInspectElement extends LitElement {
   }
 
   protected firstUpdated() {
-    window.addEventListener('mousemove', this.handleSwitchMove)
-    document.addEventListener('mouseup', this.handleMouseUp)
     this.registerInspector()
     this.registerHotKey()
   }
 
   disconnectedCallback() {
-    window.removeEventListener('mousemove', this.handleSwitchMove)
-    document.removeEventListener('mouseup', this.handleMouseUp)
     this.unregisterInspector()
     this.unregisterHotKey()
   }
@@ -316,10 +243,9 @@ export class DomInspectElement extends LitElement {
       <div
         id="inspector-switch"
         @click="${this.handleClickSwitch}"
-        @mousedown="${this.handleRecordSwitchPosition}"
-        class="fixed z-[999] p-2 rounded-full shadow-lg border-gray-500 top-10 left-1/2 -translate-x-1/2 cursor-pointer ${this.enableInspect ? 'text-blue-700' : ''} bg-slate-300 border ${this.showSwitch ? 'flex' : 'hidden'}"
+        class="fixed z-[999] p-2 rounded-full shadow-lg border-gray-500 top-10 left-1/2 -translate-x-1/2 cursor-pointer bg-slate-300 border flex"
       >
-       OP: ${this.enableInspect}
+        Inspect: ${this.enableInspect}
       </div>
     `
   }
