@@ -3,6 +3,7 @@ import { LitElement, css, html, unsafeCSS } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import tailwindInjectedCss from './tailwind.out.css?raw'
+import { parse2Block } from './dom-parser'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -154,7 +155,9 @@ export class DomInspectElement extends LitElement {
       e.stopPropagation()
       e.preventDefault()
       // TODO: 剪藏
-      alert(this.hoveredElement?.textContent)
+      // alert(this.hoveredElement?.textContent)
+      const blocks = parse2Block(this.hoveredElement as HTMLElement)
+      console.log(blocks)
 
       // 清除遮罩层
       this.hoveredElement = null
