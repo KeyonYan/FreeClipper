@@ -4,6 +4,7 @@ import { property, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import tailwindInjectedCss from './tailwind.out.css?raw'
 import { parse2Block } from './dom-parser'
+import { uploadToNotion } from './notion-fetch'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -156,8 +157,10 @@ export class DomInspectElement extends LitElement {
       e.preventDefault()
       // TODO: 剪藏
       // alert(this.hoveredElement?.textContent)
+      console.log(this.hoveredElement)
       const blocks = parse2Block(this.hoveredElement as HTMLElement)
       console.log(blocks)
+      uploadToNotion(blocks)
 
       // 清除遮罩层
       this.hoveredElement = null

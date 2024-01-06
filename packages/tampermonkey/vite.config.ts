@@ -22,4 +22,14 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    port: 5173,
+    proxy: {
+      '/notionapi': {
+        target: 'https://api.notion.com/v1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/notionapi/, ''),
+      }
+    }
+  }
 })

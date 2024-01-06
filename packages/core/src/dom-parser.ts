@@ -1,7 +1,11 @@
+
 const whiteList = ['#text', 'P', 'A', 'IMG', 'BR']
 
 function elementHandler(e: HTMLElement) {
   if (e instanceof HTMLParagraphElement) {
+    if (e.childElementCount === 1 && e.firstElementChild?.tagName === 'A') {
+      return linkHandler(e.firstElementChild as HTMLLinkElement)
+    }
     return paragraphHandler(e)
   } else if (e instanceof HTMLImageElement) {
     return imageHandler(e)
@@ -11,8 +15,8 @@ function elementHandler(e: HTMLElement) {
     return quoteHandler(e)
   } else if (e.tagName === 'BR') {
     return brHandler()
-  } else if (e.tagName === 'A') {
-    return linkPreviewHandler(e)
+  } else if (e instanceof HTMLLinkElement) {
+    return linkHandler(e)
   } else if (e.tagName === 'CODE') {
     return codeHandler(e)
   } else if (e.tagName === 'SPAN' && e.getAttribute('data-tex')) {
@@ -63,9 +67,12 @@ function brHandler() {
   }
 }
 
-function linkPreviewHandler(e: HTMLElement) {
+function linkHandler(e: HTMLLinkElement) {
+  const link = e.getAttribute('href') ?? null
+  const content = e.textContent ?? link
+  console.log("link: ", link)
   return {
-    link_preview: {url: e.getAttribute('href')!}
+    paragraph: {rich_text: [{ type: 'text', text: { content: content, link: {url: link} }}]}
   }
 }
 
@@ -108,16 +115,19 @@ function parseRichText(e: HTMLElement): any[] | undefined {
   const nodes = e.childNodes
   if (!nodes || nodes.length <= 0) {
     if (!whiteList.includes(e.nodeName)) return
-    let content = '', link = null
+    let text: any = {content: '', link: null}
     if (e.nodeName === '#text') {
-      content = e.textContent ?? ''
+      const content = e.textContent ?? ''
+      text.content = content
       if (e.parentElement!.tagName === 'A') {
-        link = e.parentElement!.getAttribute('href')
+        const link = e.parentElement!.getAttribute('href')
+        text['link'] = {}
+        text['link']['url'] = link
       }
     } else if (e.nodeName === 'BR') {
-      content = '\n'
+      text['content'] = '\n'
     }
-    return [{ type: 'text', text: { content: content, link: link }}]
+    return [{ type: 'text', text: text}]
   }
   let texts: any[] = []
   for (let i = 0; i < nodes.length; i++) {
