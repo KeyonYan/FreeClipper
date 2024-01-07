@@ -1,3 +1,5 @@
+import { linkHandler } from "./LinkHandler"
+
 const whiteList = ['#text', 'P', 'A', 'IMG', 'BR', 'B']
 
 function textHandler(e: HTMLElement) {
@@ -9,23 +11,24 @@ function textHandler(e: HTMLElement) {
   } else if (e.nodeName === 'BR') {
     content = '\n'
   }
-  const link = textLinkHandler(e)
   return {
     text: {
       content: content,
-      link: link
     },
   }
 }
 
 function textLinkHandler(e: HTMLElement) {
-  const parent = e.parentElement
-  if (!parent) return
-  if (parent.tagName === 'A') {
-    const url = parent.getAttribute('href')
-    return {url: url}
+  const textLink: any = {
+    text: {
+      content: e.textContent,
+    }
   }
-  return null
+  const url = e.getAttribute('href')
+  if (url) {
+    textLink.text.link = { url: url}
+  }
+  return textLink
 }
 
 // 设置文本样式
@@ -53,7 +56,17 @@ export function richTextHandler(e: HTMLElement, annotations?: any): any[] | unde
       return [text]
     }
     return
+  } else if (e.tagName === 'A') {
+    const text: any = textLinkHandler(e)
+    if (text) {
+      if (annotations) {
+        text.annotations = annotations
+      }
+      return [text]
+    }
+    return
   }
+
   let texts: any[] = []
   if (!annotations) {
     annotations = {
@@ -69,9 +82,8 @@ export function richTextHandler(e: HTMLElement, annotations?: any): any[] | unde
     const child = nodes[i]
     const newAnnotations = annotationsHandler(annotations, e)
     const text = richTextHandler(child as HTMLElement, newAnnotations)
-    if (text) {
-      texts = [...texts, ...text]
-    }
+    if (!text) continue
+    texts = [...texts, ...text]
   }
   return texts
 }
