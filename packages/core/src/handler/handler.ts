@@ -1,9 +1,11 @@
 import { brHandler } from "./baseHandler/BrHandler"
+import { bulletedListHandler } from "./baseHandler/BulletedListHandler"
 import { codeHandler } from "./baseHandler/CodeHandler"
 import { equationHandler } from "./baseHandler/EquationHandler"
 import { headingHandler } from "./baseHandler/HeadingHandler"
 import { imageHandler } from "./baseHandler/ImageHandler"
 import { linkHandler } from "./baseHandler/LinkHandler"
+import { numberedListHandler } from "./baseHandler/NumberedListHandler"
 import { paragraphHandler } from "./baseHandler/ParagraphHandler"
 import { quoteHandler } from "./baseHandler/QuoteHandler"
 
@@ -27,6 +29,12 @@ export function commonHandler(e: HTMLElement) {
     return codeHandler(e)
   } else if (e.tagName === 'SPAN' && e.getAttribute('data-tex')) {
     return equationHandler(e)
+  } else if (e.tagName === 'LI') {
+    if (e.parentElement?.tagName === 'UL') {
+      return bulletedListHandler(e)
+    } else if (e.parentElement?.tagName === 'OL') {
+      return numberedListHandler(e)
+    }
   }
   return
 }
