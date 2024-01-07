@@ -33,19 +33,31 @@ function textLinkHandler(e: HTMLElement) {
 
 // 设置文本样式
 function annotationsHandler(annotations: any, e: HTMLElement) {
-  const newAnnotations = Object.assign({}, annotations)
+  let newAnnotations = null
+  if (annotations) {
+    newAnnotations = Object.assign({}, annotations)
+  } else {
+    newAnnotations = {
+      bold: false,
+      italic: false,
+      strikethrough: false,
+      underline: false,
+      code: false,
+      color: 'default'
+    }
+  }
   if (e.tagName === 'B') {
     newAnnotations.bold = true
-  } else if (e.tagName === 'CODE') {
-    newAnnotations.code = true
   } else if (e.tagName === 'I') {
     newAnnotations.italic = true
+  } else if (e.tagName === 'CODE') {
+    newAnnotations.code = true
   }
   
   return newAnnotations
 }
 
-export function richTextHandler(e: HTMLElement, annotations?: any): any[] | undefined {
+export function richTextHandler(e: HTMLElement, codeMode?: boolean, annotations?: any): any[] | undefined {
   const nodes = e.childNodes
   if (!nodes || nodes.length <= 0) {
     const text: any = textHandler(e)
@@ -68,20 +80,18 @@ export function richTextHandler(e: HTMLElement, annotations?: any): any[] | unde
   }
 
   let texts: any[] = []
-  if (!annotations) {
-    annotations = {
-      bold: false,
-      italic: false,
-      strikethrough: false,
-      underline: false,
-      code: false,
-      color: 'default'
-    }
-  }
   for (let i = 0; i < nodes.length; i++) {
     const child = nodes[i]
-    const newAnnotations = annotationsHandler(annotations, e)
-    const text = richTextHandler(child as HTMLElement, newAnnotations)
+    if (!codeMode) {
+      codeMode = (e.tagName === 'CODE' && e.parentElement?.tagName === 'PRE')
+    }
+    let text = null
+    if (codeMode) {
+      text = richTextHandler(child as HTMLElement, codeMode)
+    } else {
+      const newAnnotations = annotationsHandler(annotations, e)
+      text = richTextHandler(child as HTMLElement, codeMode, newAnnotations)
+    }
     if (!text) continue
     texts = [...texts, ...text]
   }
