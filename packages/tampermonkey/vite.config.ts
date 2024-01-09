@@ -28,8 +28,8 @@ export default defineConfig({
       '/notionapi': {
         target: 'https://api.notion.com/v1',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/notionapi/, ''),
-      }
-    }
-  }
+        rewrite: path => path.replace(/^\/notionapi/, ''),
+      },
+    },
+  },
 })

@@ -1,9 +1,9 @@
-import { richTextHandler } from "./RichTextHandler";
+import { richTextHandler } from './RichTextHandler'
 
-export function bulletedListHandler (e: HTMLElement) {
+export function bulletedListHandler(e: HTMLElement) {
   return {
     bulleted_list_item: {
-      rich_text: richTextHandler(e)
-    }
+      rich_text: richTextHandler(e),
+    },
   }
 }

@@ -1,19 +1,19 @@
-import { linkHandler } from "./LinkHandler"
-
 const whiteList = ['#text', 'P', 'A', 'IMG', 'BR', 'B']
 
 function textHandler(e: HTMLElement) {
-  if (!whiteList.includes(e.nodeName)) return
-  if (e.textContent === '') return
+  if (!whiteList.includes(e.nodeName))
+    return
+  if (e.textContent === '')
+    return
   let content = ''
-  if (e.nodeName === '#text') {
+  if (e.nodeName === '#text')
     content = e.textContent ?? ''
-  } else if (e.nodeName === 'BR') {
+  else if (e.nodeName === 'BR')
     content = '\n'
-  }
+
   return {
     text: {
-      content: content,
+      content,
     },
   }
 }
@@ -22,12 +22,12 @@ function textLinkHandler(e: HTMLElement) {
   const textLink: any = {
     text: {
       content: e.textContent,
-    }
+    },
   }
   const url = e.getAttribute('href')
-  if (url) {
-    textLink.text.link = { url: url}
-  }
+  if (url)
+    textLink.text.link = { url }
+
   return textLink
 }
 
@@ -36,24 +36,24 @@ function annotationsHandler(annotations: any, e: HTMLElement) {
   let newAnnotations = null
   if (annotations) {
     newAnnotations = Object.assign({}, annotations)
-  } else {
+  }
+  else {
     newAnnotations = {
       bold: false,
       italic: false,
       strikethrough: false,
       underline: false,
       code: false,
-      color: 'default'
+      color: 'default',
     }
   }
-  if (e.tagName === 'B') {
+  if (e.tagName === 'B')
     newAnnotations.bold = true
-  } else if (e.tagName === 'I') {
+  else if (e.tagName === 'I')
     newAnnotations.italic = true
-  } else if (e.tagName === 'CODE') {
+  else if (e.tagName === 'CODE')
     newAnnotations.code = true
-  }
-  
+
   return newAnnotations
 }
 
@@ -62,18 +62,19 @@ export function richTextHandler(e: HTMLElement, codeMode?: boolean, annotations?
   if (!nodes || nodes.length <= 0) {
     const text: any = textHandler(e)
     if (text) {
-      if (annotations) {
+      if (annotations)
         text.annotations = annotations
-      }
+
       return [text]
     }
     return
-  } else if (e.tagName === 'A') {
+  }
+  else if (e.tagName === 'A') {
     const text: any = textLinkHandler(e)
     if (text) {
-      if (annotations) {
+      if (annotations)
         text.annotations = annotations
-      }
+
       return [text]
     }
     return
@@ -82,17 +83,19 @@ export function richTextHandler(e: HTMLElement, codeMode?: boolean, annotations?
   let texts: any[] = []
   for (let i = 0; i < nodes.length; i++) {
     const child = nodes[i]
-    if (!codeMode) {
+    if (!codeMode)
       codeMode = (e.tagName === 'CODE' && e.parentElement?.tagName === 'PRE')
-    }
+
     let text = null
     if (codeMode) {
       text = richTextHandler(child as HTMLElement, codeMode)
-    } else {
+    }
+    else {
       const newAnnotations = annotationsHandler(annotations, e)
       text = richTextHandler(child as HTMLElement, codeMode, newAnnotations)
     }
-    if (!text) continue
+    if (!text)
+      continue
     texts = [...texts, ...text]
   }
   return texts

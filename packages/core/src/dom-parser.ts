@@ -1,4 +1,4 @@
-import { commonHandler } from "./handler/handler"
+import { commonHandler } from './handler/handler'
 
 export function parse2Block(e: HTMLElement) {
   const blocks: any[] = []
