@@ -1,4 +1,4 @@
-const whiteList = ['#text', 'P', 'A', 'IMG', 'BR', 'B']
+const whiteList = ['#text', 'P', 'A', 'IMG', 'BR', 'B', 'STRONG']
 
 function textHandler(e: HTMLElement) {
   if (!whiteList.includes(e.nodeName))
@@ -47,7 +47,7 @@ function annotationsHandler(annotations: any, e: HTMLElement) {
       color: 'default',
     }
   }
-  if (e.tagName === 'B')
+  if (e.tagName === 'B' || e.tagName === 'STRONG')
     newAnnotations.bold = true
   else if (e.tagName === 'I')
     newAnnotations.italic = true
