@@ -1,10 +1,12 @@
 import type { PropertyValueMap } from 'lit'
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { property, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import tailwindInjectedCss from './tailwind.out.css?raw'
 import { parse2Block } from './dom-parser'
 import { uploadToNotion } from './notion-fetch'
+import type { Toaster } from './toast'
+import { useToast } from './toast'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -48,10 +50,18 @@ export class DomInspectElement extends LitElement {
   showInspectContainer = false // 是否展示
 
   @state()
+  isClipping: boolean = false // 是否正在剪藏
+
+  @state()
   protected enableInspect = false // 点击开关打开
 
   @state()
   preUserSelect = ''
+
+  @query('loading-toaster')
+  toaster!: Toaster
+
+  toast!: ReturnType<typeof useToast>
 
   // 渲染遮罩层
   renderCover = () => {
@@ -155,12 +165,18 @@ export class DomInspectElement extends LitElement {
     if (this.enableInspect && this.showInspectContainer) {
       e.stopPropagation()
       e.preventDefault()
-      // TODO: 剪藏
-      // alert(this.hoveredElement?.textContent)
       console.log(this.hoveredElement)
+      this.isClipping = true
+      const key = Date.now().toString()
+      this.toast.showToast(key, '✂正在剪藏...')
       const blocks = parse2Block(this.hoveredElement as HTMLElement)
-      console.log(blocks)
       uploadToNotion(blocks)
+        .then(({ success }) => {
+          if (success)
+            this.toast.updateToast(key, '✅剪藏成功')
+          else
+            this.toast.updateToast(key, '❌剪藏失败')
+        })
 
       // 清除遮罩层
       this.hoveredElement = null
@@ -234,6 +250,7 @@ export class DomInspectElement extends LitElement {
   protected firstUpdated() {
     this.registerInspector()
     this.registerHotKey()
+    this.toast = useToast(this.toaster)
   }
 
   disconnectedCallback() {
@@ -269,6 +286,7 @@ export class DomInspectElement extends LitElement {
       >
         Inspect: ${this.enableInspect}
       </div>
+      <loading-toaster></loading-toaster>
     `
   }
 

@@ -1,7 +1,7 @@
 import { Client } from '@notionhq/client'
 
-const auth = '' // TODO
-const databaseId = '' // TODO
+const auth = 'secret_jzho2L9xxhYVj9ZFYcqIDWqnj4urNh6RgQN72gZfBdC' // TODO
+const databaseId = '63b4ceb167134a799c8d3ff6dd715a99' // TODO
 const notion = new Client({
   auth,
   fetch: (url: string, init) => {
@@ -11,15 +11,21 @@ const notion = new Client({
 const LIMIT_BLOCK_COUNT = 50
 
 export async function uploadToNotion(blocks: any[]) {
-  const { id: pageId } = await addNotionPageToDatabase(
-    databaseId,
-    { title: { title: [{ text: { content: document.title } }] } },
-    blocks.slice(0, LIMIT_BLOCK_COUNT),
-  )
-  if (blocks.length > LIMIT_BLOCK_COUNT) {
-    for (let i = LIMIT_BLOCK_COUNT; i < blocks.length; i += LIMIT_BLOCK_COUNT)
-      await appendToNotionPage(pageId, blocks.slice(i, i + LIMIT_BLOCK_COUNT))
+  try {
+    const { id: pageId } = await addNotionPageToDatabase(
+      databaseId,
+      { title: { title: [{ text: { content: document.title } }] } },
+      blocks.slice(0, LIMIT_BLOCK_COUNT),
+    )
+    if (blocks.length > LIMIT_BLOCK_COUNT) {
+      for (let i = LIMIT_BLOCK_COUNT; i < blocks.length; i += LIMIT_BLOCK_COUNT)
+        await appendToNotionPage(pageId, blocks.slice(i, i + LIMIT_BLOCK_COUNT))
+    }
   }
+  catch (e) {
+    return { success: false, message: e }
+  }
+  return { success: true }
 }
 
 export async function addNotionPageToDatabase(databaseId: string, pageProperties: any, blocks?: any[]) {
