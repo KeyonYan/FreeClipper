@@ -279,13 +279,13 @@ export class DomInspectElement extends LitElement {
           </div>
         </div>
       </div>
-      <div
+      <!-- <div
         id="inspector-switch"
         @click="${this.handleClickSwitch}"
         class="fixed z-[999] p-2 rounded-full shadow-lg border-gray-500 top-10 left-1/2 -translate-x-1/2 cursor-pointer bg-slate-300 border flex"
       >
         Inspect: ${this.enableInspect}
-      </div>
+      </div> -->
       <loading-toaster></loading-toaster>
     `
   }

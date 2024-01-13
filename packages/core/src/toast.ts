@@ -21,7 +21,7 @@ export class Toaster extends LitElement {
         ${this.toasts.map(
           ({ message, url }) =>
             html`
-            <div class="hover:scale-110 duration-500 items-center justify-center p-2 flex flex-row gap-2 rounded-lg shadow-md bg-white text-black">
+            <div class=" hover:shadow-lg transition-all duration-400 items-center justify-center p-2 flex flex-row gap-2 rounded-lg shadow-md bg-white text-black">
               <div>${message}</div>
               ${url && html`
                 <a href=${url}>
