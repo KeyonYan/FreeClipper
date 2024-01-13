@@ -17,7 +17,6 @@ export class ConfigComponent extends LitElement {
   static userStyles = css``
 
   protected firstUpdated() {
-    console.log(localStorage.getItem(CLIP_DATABASE_ID))
     this.key = localStorage.getItem(NOTION_KEY) ?? ''
     const database = localStorage.getItem(CLIP_DATABASE_ID)
     if (database)
@@ -32,6 +31,7 @@ export class ConfigComponent extends LitElement {
       return {
         id: db.id as string,
         name: db.title.map((text: any) => text.text.content).join() as string,
+        icon: db.icon,
       }
     })
   }
@@ -52,7 +52,6 @@ export class ConfigComponent extends LitElement {
 
   reloadDatabaseOption() {
     this.reloadingDatabase = true
-    console.log('key: ', this.key)
     localStorage.setItem(NOTION_KEY, this.key)
     this.updateDatabaseOptions()
       .then(() => {
