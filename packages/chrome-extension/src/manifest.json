@@ -14,8 +14,21 @@
   "{{firefox}}.browser_action": {
     "default_popup": "src/popup.html"
   },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
   "background": {
     "{{chrome}}.service_worker": "src/background.ts",
     "{{firefox}}.scripts": ["src/background.ts"]
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js",
+        "src/content.ts"
+      ]
+    }
+  ]
 }
