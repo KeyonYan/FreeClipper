@@ -168,14 +168,14 @@ export class DomInspectElement extends LitElement {
       console.log(this.hoveredElement)
       this.isClipping = true
       const key = Date.now().toString()
-      this.toast.showToast(key, '✂正在剪藏...')
+      this.toast.showToast(key, '✂ Clipping...')
       const blocks = parse2Block(this.hoveredElement as HTMLElement)
       uploadToNotion(blocks)
-        .then(({ success }) => {
+        .then(({ success, url }) => {
           if (success)
-            this.toast.updateToast(key, '✅剪藏成功')
+            this.toast.updateToast(key, '✅ Clip Success', url)
           else
-            this.toast.updateToast(key, '❌剪藏失败')
+            this.toast.updateToast(key, '❌ Clip Failed')
         })
 
       // 清除遮罩层
