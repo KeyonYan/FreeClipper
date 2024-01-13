@@ -1,6 +1,6 @@
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { query, state } from 'lit/decorators.js'
-import tailwindInjectedCss from './tailwind.out.css?raw'
+import { state } from 'lit/decorators.js'
+import tailwindInjectedCss from '../tailwind.out.css?raw'
 
 interface ToastData {
   key: string

@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { DomInspectElement } from 'free-clipper-core'
+import { ConfigComponent, DomInspectElement } from 'free-clipper-core'
 import App from './App.vue'
 import 'virtual:uno.css'
 
@@ -15,6 +15,10 @@ createApp(App).mount(
 )
 
 window.customElements.define('dom-inspector-component', DomInspectElement)
+window.customElements.define('clip-config', ConfigComponent)
 
 const domInspectElement = document.createElement('dom-inspector-component')
 document.body.appendChild(domInspectElement)
+
+const configElement = document.createElement('clip-config')
+document.body.appendChild(configElement)

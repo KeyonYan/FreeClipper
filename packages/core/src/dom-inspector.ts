@@ -5,8 +5,8 @@ import { styleMap } from 'lit/directives/style-map.js'
 import tailwindInjectedCss from './tailwind.out.css?raw'
 import { parse2Block } from './dom-parser'
 import { uploadToNotion } from './notion-fetch'
-import type { Toaster } from './toast'
-import { useToast } from './toast'
+import type { Toaster } from './components/toast'
+import { useToast } from './components/toast'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
