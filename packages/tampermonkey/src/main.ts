@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
-import { CLIP_DATABASE_INFO, ConfigComponent, DomInspectElement, NOTION_KEY } from 'free-clipper-core'
+
+// eslint-disable-next-line ts/consistent-type-imports
+import { CLIP_DATABASE_INFO, ClipperConfig, ClipperUiToaster, DomInspector, NOTION_KEY } from 'free-clipper-core'
 import type { DatabaseInfo } from 'free-clipper-core'
 import { GM_getValue, GM_setValue } from 'vite-plugin-monkey/dist/client'
 import App from './App.vue'
@@ -16,21 +18,24 @@ createApp(App).mount(
   })(),
 )
 
-window.customElements.define('dom-inspector-component', DomInspectElement)
-window.customElements.define('clip-config', ConfigComponent)
+// window.customElements.define('dom-inspector-component', DomInspectElement)
+// window.customElements.define('clip-config', ConfigComponent)
 
-const domInspectElement = document.createElement('dom-inspector-component') as DomInspectElement
+const domInspectElement = document.createElement('dom-inspector') as DomInspector
 domInspectElement.getNotionKey = getNotionKey
 domInspectElement.getClipDatabaseInfo = getClipDatabaseInfo
 document.body.appendChild(domInspectElement)
 
-const configElement = document.createElement('clip-config') as ConfigComponent
+const configElement = document.createElement('clipper-config') as ClipperConfig
 configElement.getNotionKey = getNotionKey
 configElement.setNotionKey = setNotionKey
 configElement.getClipDatabaseInfo = getClipDatabaseInfo
 configElement.setClipDatabaseInfo = setClipDatabaseInfo
 configElement.handleReset = handleReset
 document.body.appendChild(configElement)
+
+const toasterElement = document.createElement('clipper-ui-toaster')
+document.body.appendChild(toasterElement)
 
 export function getNotionKey() {
   return GM_getValue(NOTION_KEY, '')

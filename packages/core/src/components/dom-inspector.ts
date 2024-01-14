@@ -1,13 +1,13 @@
 import type { PropertyValueMap } from 'lit'
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
+import { customElement, property, query, state } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import tailwindInjectedCss from './tailwind.out.css?raw'
-import { parse2Block } from './dom-parser'
-import { uploadToNotion } from './notion-fetch'
-import type { Toaster } from './components/toast'
-import { useToast } from './components/toast'
-import type { DatabaseInfo } from './config'
+import tailwindInjectedCss from '../tailwind.out.css?raw'
+import { parse2Block } from '../dom-parser'
+import { uploadToNotion } from '../notion-fetch'
+import type { DatabaseInfo } from '../config'
+import type { ClipperUiToaster } from './clipper-ui-toaster'
+import { useToaster } from './clipper-ui-toaster'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -21,7 +21,8 @@ function getBatchDomPropertyValue(target: HTMLElement, properties: string[]) {
   return result
 }
 
-export class DomInspectElement extends LitElement {
+@customElement('dom-inspector')
+export class DomInspector extends LitElement {
   @property()
   toggleHotKey: string = 'KeyQ'
 
@@ -65,10 +66,7 @@ export class DomInspectElement extends LitElement {
   @state()
   preUserSelect = ''
 
-  @query('loading-toaster')
-  toaster!: Toaster
-
-  toast!: ReturnType<typeof useToast>
+  toaster: ClipperUiToaster | undefined = undefined
 
   // 渲染遮罩层
   renderCover = () => {
@@ -175,18 +173,19 @@ export class DomInspectElement extends LitElement {
       console.log(this.hoveredElement)
       this.isClipping = true
       const key = Date.now().toString()
-      this.toast.showToast(key, '✂ Clipping...')
+
+      this.toaster?.showToast(key, '✂  Clipping...')
       const blocks = parse2Block(this.hoveredElement as HTMLElement)
       const databaseId = this.getClipDatabaseInfo()?.id
       if (databaseId) {
         uploadToNotion(blocks, this.getNotionKey(), databaseId)
-        .then(({ success, url }) => {
-          if (success)
-          this.toast.updateToast(key, '✅ Clip Success', url)
-        else
-        this.toast.updateToast(key, '❌ Clip Failed')
-    })
-  }
+          .then(({ success, url }) => {
+            if (success)
+              this.toaster?.updateToast(key, '✅ Clip Success', url)
+            else
+              this.toaster?.updateToast(key, '❌ Clip Failed')
+          })
+      }
 
       // 清除遮罩层
       this.hoveredElement = null
@@ -258,9 +257,9 @@ export class DomInspectElement extends LitElement {
   }
 
   protected firstUpdated() {
+    this.toaster = useToaster()
     this.registerInspector()
     this.registerHotKey()
-    this.toast = useToast(this.toaster)
   }
 
   disconnectedCallback() {
@@ -296,25 +295,25 @@ export class DomInspectElement extends LitElement {
       >
         Inspect: ${this.enableInspect}
       </div> -->
-      <loading-toaster></loading-toaster>
     `
   }
 
-  static userStyles = css`
-    .element-info-top {
-      top: -4px;
-      transform: translateY(-100%);
-    }
-    .element-info-bottom {
-      top: calc(100% + 4px);
-    }
-    .element-info-top-inner {
-      top: 4px;
-    }
-    .element-info-bottom-inner {
-      bottom: 4px;
-    }
-  `
-
-  static styles = [this.userStyles, unsafeCSS(tailwindInjectedCss)]
+  static styles = [
+    css`
+        .element-info-top {
+          top: -4px;
+          transform: translateY(-100%);
+        }
+        .element-info-bottom {
+          top: calc(100% + 4px);
+        }
+        .element-info-top-inner {
+          top: 4px;
+        }
+        .element-info-bottom-inner {
+          bottom: 4px;
+        }
+      `,
+    unsafeCSS(tailwindInjectedCss),
+  ]
 }

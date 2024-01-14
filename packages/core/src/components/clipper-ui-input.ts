@@ -1,8 +1,9 @@
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { property } from 'lit/decorators.js'
+import { customElement, property } from 'lit/decorators.js'
 import tailwindInjectedCss from '../tailwind.out.css?raw'
 
-export class CustomInput extends LitElement {
+@customElement('clipper-ui-input')
+export class ClipperUiInput extends LitElement {
   @property({ type: String }) label = null
   @property({ type: String }) value = ''
   @property({ type: Function }) onChangeValue: any
@@ -12,7 +13,6 @@ export class CustomInput extends LitElement {
     this.onChangeValue(target.textContent ?? '')
   }
 
-  static userStyles = css``
   render() {
     return html`
       <div class='border shadow-sm rounded-md focus:ring-1 p-2 w-full text-sm whitespace-nowrap overflow-hidden' contenteditable="true" @input=${this.handleInput} >
@@ -21,5 +21,5 @@ export class CustomInput extends LitElement {
     `
   }
 
-  static styles = [this.userStyles, unsafeCSS(tailwindInjectedCss)]
+  static styles = unsafeCSS(tailwindInjectedCss)
 }

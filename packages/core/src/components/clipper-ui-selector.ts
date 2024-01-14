@@ -1,9 +1,10 @@
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { property, state } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import tailwindInjectedCss from '../tailwind.out.css?raw'
 import type { DatabaseInfo } from '../config'
 
-export class SelectorComponent extends LitElement {
+@customElement('clipper-ui-selector')
+export class ClipperUiSelector extends LitElement {
   @property({ type: Array<DatabaseInfo> }) options: DatabaseInfo[] = []
   @property() selectedOption: DatabaseInfo | null = null
   @property({ type: String }) placeholder = ''
@@ -36,8 +37,6 @@ export class SelectorComponent extends LitElement {
     return ''
   }
 
-  static userStyles = css`
-  `
   render() {
     const optionsIcon = this.options.map((opt => this.computedIcon(opt)))
     const selectedText = (this.selectedOption && this.selectedOption.name) || this.placeholder
@@ -59,5 +58,5 @@ export class SelectorComponent extends LitElement {
     `
   }
 
-  static styles = [this.userStyles, unsafeCSS(tailwindInjectedCss)]
+  static styles = unsafeCSS(tailwindInjectedCss)
 }
