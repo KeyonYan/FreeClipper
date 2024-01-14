@@ -1,13 +1,16 @@
 import { LitElement, css, html, unsafeCSS } from 'lit'
-import { query, state } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import tailwindInjectedCss from '../tailwind.out.css?raw'
 import { searchNotionDatabase } from '../notion-fetch'
 import type { DatabaseInfo } from '../config'
-import { CLIP_DATABASE_INFO, NOTION_KEY, getClipDatabaseInfo, getNotionKey, setClipDatabaseInfo, setNotionKey } from '../config'
 import { SelectorComponent } from './selector'
 import { CustomInput } from './custom-input'
 
 export class ConfigComponent extends LitElement {
+  @property({ type: Function }) setNotionKey: any
+  @property({ type: Function }) getNotionKey: any
+  @property({ type: Function }) getClipDatabaseInfo: any
+  @property({ type: Function }) setClipDatabaseInfo: any
   @state() options: DatabaseInfo[] = []
   @state() key = ''
   @state() selectedOption: DatabaseInfo | null = null
@@ -16,15 +19,15 @@ export class ConfigComponent extends LitElement {
   static userStyles = css``
 
   protected firstUpdated() {
-    this.key = getNotionKey() ?? ''
-    const database = getClipDatabaseInfo()
+    this.key = this.getNotionKey() ?? ''
+    const database = this.getClipDatabaseInfo()
     if (database)
       this.selectedOption = database
     this.updateDatabaseOptions()
   }
 
   async updateDatabaseOptions() {
-    const data = await searchNotionDatabase()
+    const data = await searchNotionDatabase(this.key)
     const databases = data.results as any[]
     this.options = databases.map((db) => {
       return {
@@ -36,14 +39,14 @@ export class ConfigComponent extends LitElement {
   }
 
   handleSave() {
-    setNotionKey(this.key)
+    this.setNotionKey(this.key)
     if (this.selectedOption)
-      setClipDatabaseInfo(this.selectedOption)
+      this.setClipDatabaseInfo(this.selectedOption)
   }
 
   handleReset() {
-    localStorage.removeItem(NOTION_KEY)
-    localStorage.removeItem(CLIP_DATABASE_INFO)
+    localStorage.removeItem('__freeclip__key__')
+    localStorage.removeItem('__freeclip__databaseId__')
   }
 
   handleSelect(option: DatabaseInfo) {
@@ -53,7 +56,7 @@ export class ConfigComponent extends LitElement {
 
   reloadDatabaseOption() {
     this.reloadingDatabase = true
-    localStorage.setItem(NOTION_KEY, this.key)
+    this.setNotionKey(this.key)
     this.updateDatabaseOptions()
       .then(() => {
         this.reloadingDatabase = false
@@ -62,7 +65,7 @@ export class ConfigComponent extends LitElement {
 
   render() {
     return html`
-      <div class='fixed top-5 right-5 w-[300px] h-auto rounded-lg shadow-md bg-white flex flex-col gap-2 px-2 py-4'>
+      <div class='fixed top-12 right-5 w-[300px] h-auto rounded-lg shadow-md bg-white flex flex-col gap-2 px-2 py-4'>
         <div class='flex flex-col gap-2 justify-center w-full'>
           <div class='text-sm font-bold'>Key</div>
           <custom-input .value=${this.key} .onChangeValue=${(v: string) => this.key = v} .placeholder=${'Notion Intergration Key'}></custom-input>

@@ -1,12 +1,11 @@
 import { Client } from '@notionhq/client'
 import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints'
-import { getClipDatabaseInfo, getNotionKey } from './config'
 
 const LIMIT_BLOCK_COUNT = 50
 
-export function getClient() {
+export function getClient(key: string) {
   const notion = new Client({
-    auth: getNotionKey() ?? '',
+    auth: key,
     fetch: (url: string, init) => {
       return fetch(url.replace('https://api.notion.com/v1', 'http://localhost:5173/notionapi'), init)
     },
@@ -14,17 +13,17 @@ export function getClient() {
   return notion
 }
 
-export async function uploadToNotion(blocks: any[]) {
+export async function uploadToNotion(blocks: any[], key: string, databaseId: string) {
   try {
-    const clipDatabase = getClipDatabaseInfo()
     const resp = await addNotionPageToDatabase(
-      clipDatabase?.id ?? '',
+      key,
+      databaseId,
       { title: { title: [{ text: { content: document.title } }] } },
       blocks.slice(0, LIMIT_BLOCK_COUNT),
     )
     if (blocks.length > LIMIT_BLOCK_COUNT) {
       for (let i = LIMIT_BLOCK_COUNT; i < blocks.length; i += LIMIT_BLOCK_COUNT)
-        await appendToNotionPage(resp.id, blocks.slice(i, i + LIMIT_BLOCK_COUNT))
+        await appendToNotionPage(key, resp.id, blocks.slice(i, i + LIMIT_BLOCK_COUNT))
     }
     return { success: true, url: resp.url }
   }
@@ -33,8 +32,8 @@ export async function uploadToNotion(blocks: any[]) {
   }
 }
 
-export async function addNotionPageToDatabase(databaseId: string, pageProperties: any, blocks?: any[]) {
-  const newPage = await getClient().pages.create({
+export async function addNotionPageToDatabase(key: string, databaseId: string, pageProperties: any, blocks?: any[]) {
+  const newPage = await getClient(key).pages.create({
     parent: {
       database_id: databaseId,
     },
@@ -44,14 +43,14 @@ export async function addNotionPageToDatabase(databaseId: string, pageProperties
   return newPage as PageObjectResponse
 }
 
-export async function appendToNotionPage(pageId: string, blocks: any[]) {
-  await getClient().blocks.children.append({
+export async function appendToNotionPage(key: string, pageId: string, blocks: any[]) {
+  await getClient(key).blocks.children.append({
     block_id: pageId,
     children: blocks,
   })
 }
 
-export async function searchNotionDatabase(title?: string) {
+export async function searchNotionDatabase(key: string, title?: string) {
   const searchParam: any = {
     filter: {
       value: 'database',
@@ -64,6 +63,6 @@ export async function searchNotionDatabase(title?: string) {
   }
   if (title)
     searchParam.query = title
-  const resp = await getClient().search(searchParam)
+  const resp = await getClient(key).search(searchParam)
   return resp
 }

@@ -7,6 +7,7 @@ import { parse2Block } from './dom-parser'
 import { uploadToNotion } from './notion-fetch'
 import type { Toaster } from './components/toast'
 import { useToast } from './components/toast'
+import type { DatabaseInfo } from './config'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -29,6 +30,12 @@ export class DomInspectElement extends LitElement {
 
   @property()
   levelDownHotKey: string = 'KeyS'
+
+  @property()
+  getNotionKey: any
+
+  @property()
+  getClipDatabaseInfo: any
 
   @state()
   positionCssMap: Record<'container' | 'margin' | 'border' | 'padding', Record<string, string>> = {
@@ -170,13 +177,16 @@ export class DomInspectElement extends LitElement {
       const key = Date.now().toString()
       this.toast.showToast(key, '✂ Clipping...')
       const blocks = parse2Block(this.hoveredElement as HTMLElement)
-      uploadToNotion(blocks)
+      const databaseId = this.getClipDatabaseInfo()?.id
+      if (databaseId) {
+        uploadToNotion(blocks, this.getNotionKey(), databaseId)
         .then(({ success, url }) => {
           if (success)
-            this.toast.updateToast(key, '✅ Clip Success', url)
-          else
-            this.toast.updateToast(key, '❌ Clip Failed')
-        })
+          this.toast.updateToast(key, '✅ Clip Success', url)
+        else
+        this.toast.updateToast(key, '❌ Clip Failed')
+    })
+  }
 
       // 清除遮罩层
       this.hoveredElement = null
