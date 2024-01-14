@@ -11,6 +11,7 @@ export class ConfigComponent extends LitElement {
   @property({ type: Function }) getNotionKey: any
   @property({ type: Function }) getClipDatabaseInfo: any
   @property({ type: Function }) setClipDatabaseInfo: any
+  @property({ type: Function }) handleReset: any
   @state() options: DatabaseInfo[] = []
   @state() key = ''
   @state() selectedOption: DatabaseInfo | null = null
@@ -42,11 +43,6 @@ export class ConfigComponent extends LitElement {
     this.setNotionKey(this.key)
     if (this.selectedOption)
       this.setClipDatabaseInfo(this.selectedOption)
-  }
-
-  handleReset() {
-    localStorage.removeItem('__freeclip__key__')
-    localStorage.removeItem('__freeclip__databaseId__')
   }
 
   handleSelect(option: DatabaseInfo) {

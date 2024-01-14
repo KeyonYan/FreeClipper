@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { ConfigComponent, DomInspectElement, NOTION_KEY } from 'free-clipper-core'
+import { CLIP_DATABASE_INFO, ConfigComponent, DomInspectElement, NOTION_KEY } from 'free-clipper-core'
 import type { DatabaseInfo } from 'free-clipper-core'
 import { GM_getValue, GM_setValue } from 'vite-plugin-monkey/dist/client'
 import App from './App.vue'
@@ -29,6 +29,7 @@ configElement.getNotionKey = getNotionKey
 configElement.setNotionKey = setNotionKey
 configElement.getClipDatabaseInfo = getClipDatabaseInfo
 configElement.setClipDatabaseInfo = setClipDatabaseInfo
+configElement.handleReset = handleReset
 document.body.appendChild(configElement)
 
 export function getNotionKey() {
@@ -40,9 +41,14 @@ export function setNotionKey(key: string) {
 }
 
 export function getClipDatabaseInfo() {
-  return GM_getValue('clipDatabaseInfo', null)
+  return GM_getValue(CLIP_DATABASE_INFO, null)
 }
 
 export function setClipDatabaseInfo(databaseInfo: DatabaseInfo) {
-  return GM_setValue('clipDatabaseInfo', databaseInfo)
+  return GM_setValue(CLIP_DATABASE_INFO, databaseInfo)
+}
+
+export function handleReset() {
+  GM_setValue(NOTION_KEY, null)
+  GM_setValue(CLIP_DATABASE_INFO, null)
 }
