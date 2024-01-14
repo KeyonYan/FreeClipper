@@ -1,19 +1,12 @@
 import { Client } from '@notionhq/client'
-import { type PageObjectResponse, search } from '@notionhq/client/build/src/api-endpoints'
-import { property } from 'lit/decorators'
-import { CLIP_DATABASE_ID, NOTION_KEY } from './config'
-
-// const auth = 'secret_jzho2L9xxhYVj9ZFYcqIDWqnj4urNh6RgQN72gZfBdC' // TODO
-// const databaseId = '63b4ceb167134a799c8d3ff6dd715a99' // TODO
-
-// const auth = localStorage.getItem(NOTION_KEY) ?? ''
-// const databaseId = localStorage.getItem(CLIP_DATABASE_ID) ?? ''
+import type { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints'
+import { getClipDatabaseInfo, getNotionKey } from './config'
 
 const LIMIT_BLOCK_COUNT = 50
 
 export function getClient() {
   const notion = new Client({
-    auth: localStorage.getItem(NOTION_KEY) ?? '',
+    auth: getNotionKey() ?? '',
     fetch: (url: string, init) => {
       return fetch(url.replace('https://api.notion.com/v1', 'http://localhost:5173/notionapi'), init)
     },
@@ -23,8 +16,9 @@ export function getClient() {
 
 export async function uploadToNotion(blocks: any[]) {
   try {
+    const clipDatabase = getClipDatabaseInfo()
     const resp = await addNotionPageToDatabase(
-      localStorage.getItem(CLIP_DATABASE_ID) ?? '',
+      clipDatabase?.id ?? '',
       { title: { title: [{ text: { content: document.title } }] } },
       blocks.slice(0, LIMIT_BLOCK_COUNT),
     )

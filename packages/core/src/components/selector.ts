@@ -1,16 +1,11 @@
 import { LitElement, css, html, unsafeCSS } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import tailwindInjectedCss from '../tailwind.out.css?raw'
-
-export interface OptionType {
-  id: string
-  name: string
-  icon?: any
-}
+import type { DatabaseInfo } from '../config'
 
 export class SelectorComponent extends LitElement {
-  @property({ type: Array<OptionType> }) options: OptionType[] = []
-  @property() selectedOption: OptionType | null = null
+  @property({ type: Array<DatabaseInfo> }) options: DatabaseInfo[] = []
+  @property() selectedOption: DatabaseInfo | null = null
   @property({ type: String }) placeholder = ''
   @property({ type: Function }) onSelect: any
   @state() isOpen = false
@@ -19,13 +14,13 @@ export class SelectorComponent extends LitElement {
     this.isOpen = !this.isOpen
   }
 
-  handleOptionClick(option: OptionType) {
+  handleOptionClick(option: DatabaseInfo) {
     this.selectedOption = option
     this.isOpen = false
     this.onSelect(option)
   }
 
-  optionIcon(option: OptionType) {
+  optionIcon(option: DatabaseInfo) {
     if (!option.icon)
       return null
     if (option.icon.type === 'emoji')
@@ -33,7 +28,7 @@ export class SelectorComponent extends LitElement {
     return null
   }
 
-  computedIcon(opt: OptionType) {
+  computedIcon(opt: DatabaseInfo) {
     if (!opt.icon)
       return ''
     if (opt.icon.type === 'emoji')
