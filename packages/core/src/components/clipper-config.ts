@@ -74,11 +74,11 @@ export class ClipperConfig extends LitElement {
           <clipper-ui-selector .placeholder=${'Select an database'} .selectedOption=${this.selectedOption} .onSelect=${(o: DatabaseInfo) => this.handleSelect(o)} .options=${this.options}></clipper-ui-selector>
         </div>
         <div class='flex flex-row gap-2 items-center justify-center px-2 py-1'>
-          <button class='rounded-md shadow-sm border w-auto px-2 py-1 inline-flex items-center gap-1' @click=${this.handleSave}>
+          <button class='rounded-md shadow-sm border w-auto px-2 py-1 inline-flex items-center gap-1 hover:bg-[#F4F4F5]' @click=${this.handleSave}>
             <img src=${SaveIcon} />
             Save
           </button> 
-          <button class='rounded-md shadow-sm border w-auto px-2 py-1 inline-flex items-center gap-1' @click=${this.handleReset}>
+          <button class='rounded-md shadow-sm border w-auto px-2 py-1 inline-flex items-center gap-1 hover:bg-[#F4F4F5]' @click=${this.handleReset}>
             <img src=${ResetIcon} />
             Reset
           </button> 
