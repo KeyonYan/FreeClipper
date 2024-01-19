@@ -1,6 +1,6 @@
-import { DomInspectElement } from 'free-clipper-core'
+import { DomInspector } from 'free-clipper-core'
 
-window.customElements.define('dom-inspector-component', DomInspectElement)
+window.customElements.define('dom-inspector', DomInspector)
 
-const domInspectElement = document.createElement('dom-inspector-component')
+const domInspectElement = document.createElement('dom-inspector')
 document.body.appendChild(domInspectElement)
