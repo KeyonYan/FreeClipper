@@ -10,10 +10,10 @@ import ReflushIcon from '../assets/reflush.svg'
 @customElement('clipper-config')
 export class ClipperConfig extends LitElement {
   @property({ type: Function }) setNotionKey: (...args: any) => any = () => {}
-  @property({ type: Function }) getNotionKey: any
-  @property({ type: Function }) getClipDatabaseInfo: any
-  @property({ type: Function }) setClipDatabaseInfo: any
-  @property({ type: Function }) handleReset: any
+  @property({ type: Function }) getNotionKey: (...args: any) => any = () => {}
+  @property({ type: Function }) getClipDatabaseInfo: (...args: any) => any = () => {}
+  @property({ type: Function }) setClipDatabaseInfo: (...args: any) => any = () => {}
+  @property({ type: Function }) handleReset: (...args: any) => any = () => {}
   @state() options: DatabaseInfo[] = []
   @state() key = ''
   @state() selectedOption: DatabaseInfo | null = null

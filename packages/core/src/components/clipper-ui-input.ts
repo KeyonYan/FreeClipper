@@ -6,7 +6,7 @@ import tailwindInjectedCss from '../tailwind.out.css?raw'
 export class ClipperUiInput extends LitElement {
   @property({ type: String }) label = null
   @property({ type: String }) value = ''
-  @property({ type: Function }) onChangeValue: any
+  @property({ type: Function }) onChangeValue: (...args: any) => any = () => {}
 
   handleInput(e: InputEvent) {
     const target = e.target as HTMLDivElement

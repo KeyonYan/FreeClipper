@@ -8,7 +8,7 @@ export class ClipperUiSelector extends LitElement {
   @property({ type: Array<DatabaseInfo> }) options: DatabaseInfo[] = []
   @property() selectedOption: DatabaseInfo | null = null
   @property({ type: String }) placeholder = ''
-  @property({ type: Function }) onSelect: any
+  @property({ type: Function }) onSelect: (...args: any) => any = () => {}
   @state() isOpen = false
 
   toggleDropdown() {
