@@ -15,7 +15,7 @@ export class ClipperUiInput extends LitElement {
 
   render() {
     return html`
-      <input class='border shadow-sm rounded-md focus:ring-1 p-2 w-full text-sm whitespace-nowrap overflow-hidden' @input=${this.handleInput} value=${this.value} />
+      <input class='border shadow-sm rounded-md p-2 w-full text-sm whitespace-nowrap overflow-hidden placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#A1A1AA] ' @input=${this.handleInput} value=${this.value} />
     `
   }
 

@@ -92,7 +92,7 @@ export class ClipperConfig extends LitElement {
       <div class='w-[300px] bg-white flex flex-col gap-2 px-2 py-4'>
         <div class='flex flex-col gap-2 justify-center w-full'>
           <div class='text-sm font-bold'>Key</div>
-          <clipper-ui-input .value=${this.key} .onChangeValue=${(v: string) => this.key = v} .placeholder=${'Notion Intergration Key'}></clipper-ui-input>
+          <clipper-ui-input .value=${this.key} .onChangeValue=${(v: string) => this.key = v} ></clipper-ui-input>
         </div>
         <div class='flex flex-col gap-2 justify-center w-full'>
           <div class='text-sm font-bold flex flex-row items-center gap-2'>
