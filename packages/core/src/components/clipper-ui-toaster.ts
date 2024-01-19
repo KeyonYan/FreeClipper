@@ -18,9 +18,14 @@ export class ClipperUiToaster extends LitElement {
   @state()
   toasts: ToastItem[] = []
 
-  showToast = (key: string, message: string) => {
+  showToast = (key: string, message: string, duration?: number) => {
     const newToast = { key, message }
     this.toasts = [...this.toasts, newToast]
+    if (duration) {
+      setTimeout(() => {
+        this.removeToast(key)
+      }, duration)
+    }
   }
 
   updateToast = (key: string, message: string, url?: string, duration: number = 3000) => {
@@ -28,11 +33,17 @@ export class ClipperUiToaster extends LitElement {
     this.toasts = this.toasts.map((toast) => {
       if (toast.key === key) {
         setTimeout(() => {
-          this.toasts = this.toasts.filter(toast => toast.key !== key)
+          this.removeToast(key)
         }, newToast.duration)
         return newToast
       }
       return toast
+    })
+  }
+
+  removeToast = (key: string) => {
+    this.toasts = this.toasts.filter((toast) => {
+      return toast.key !== key
     })
   }
 

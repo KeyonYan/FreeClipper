@@ -6,9 +6,9 @@ const LIMIT_BLOCK_COUNT = 50
 export function getClient(key: string) {
   const notion = new Client({
     auth: key,
-    fetch: (url: string, init) => {
-      return fetch(url.replace('https://api.notion.com/v1', 'http://localhost:5173/notionapi'), init)
-    },
+    // fetch: (url: string, init) => {
+    //   return fetch(url.replace('https://api.notion.com/v1', 'http://localhost:5173/notionapi'), init)
+    // },
   })
   return notion
 }

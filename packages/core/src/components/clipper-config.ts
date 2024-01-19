@@ -6,6 +6,8 @@ import type { DatabaseInfo } from '../config'
 import SaveIcon from '../assets/save.svg'
 import ResetIcon from '../assets/reset.svg'
 import ReflushIcon from '../assets/reflush.svg'
+import type { ClipperUiToaster } from './clipper-ui-toaster'
+import { useToaster } from './clipper-ui-toaster'
 
 @customElement('clipper-config')
 export class ClipperConfig extends LitElement {
@@ -19,30 +21,54 @@ export class ClipperConfig extends LitElement {
   @state() selectedOption: DatabaseInfo | null = null
   @state() reloadingDatabase = false
 
+  toaster: ClipperUiToaster | undefined = undefined
+
   protected firstUpdated() {
+    this.toaster = useToaster()
     this.key = this.getNotionKey() ?? ''
+    console.log('firstUpdated: ', this.key)
+
     const database = this.getClipDatabaseInfo()
     if (database)
       this.selectedOption = database
-    this.updateDatabaseOptions()
+    if (this.key !== '')
+      this.updateDatabaseOptions()
   }
 
   async updateDatabaseOptions() {
-    const data = await searchNotionDatabase(this.key)
-    const databases = data.results as any[]
-    this.options = databases.map((db) => {
-      return {
-        id: db.id as string,
-        name: db.title.map((text: any) => text.text.content).join() as string,
-        icon: db.icon,
-      }
-    })
+    try {
+      const data = await searchNotionDatabase(this.key)
+      const databases = data.results as any[]
+      this.options = databases.map((db) => {
+        return {
+          id: db.id as string,
+          name: db.title.map((text: any) => text.text.content).join() as string,
+          icon: db.icon,
+        }
+      })
+    }
+    catch (e: any) {
+      console.log(e)
+      this.reloadingDatabase = false
+      const key = Date.now().toString()
+      this.toaster?.showToast(key, `❌ ${e.message ?? 'Unknown Error'}`, 3000)
+    }
   }
 
   handleSave() {
     this.setNotionKey(this.key)
     if (this.selectedOption)
       this.setClipDatabaseInfo(this.selectedOption)
+    const key = Date.now().toString()
+    this.toaster?.showToast(key, '✅ Save Success', 3000)
+  }
+
+  handleResetClick() {
+    this.handleReset()
+    this.key = ''
+    this.selectedOption = null
+    const key = Date.now().toString()
+    this.toaster?.showToast(key, '✅ Reset Success', 3000)
   }
 
   handleSelect(option: DatabaseInfo) {
@@ -55,6 +81,8 @@ export class ClipperConfig extends LitElement {
     this.setNotionKey(this.key)
     this.updateDatabaseOptions()
       .then(() => {
+        const key = Date.now().toString()
+        this.toaster?.showToast(key, '✅ Reload Success', 3000)
         this.reloadingDatabase = false
       })
   }
@@ -69,8 +97,8 @@ export class ClipperConfig extends LitElement {
         <div class='flex flex-col gap-2 justify-center w-full'>
           <div class='text-sm font-bold flex flex-row items-center gap-2'>
             Database
-            <div class='cursor-pointer hover:bg-[#F4F4F5] flex justify-center items-center p-2 rounded-md'>
-              <img src=${ReflushIcon} @click=${this.reloadDatabaseOption} class="${this.reloadingDatabase ? 'animate-spin' : ''}" />
+            <div @click=${this.reloadDatabaseOption} class='cursor-pointer hover:bg-[#F4F4F5] flex justify-center items-center p-2 rounded-md'>
+              <img src=${ReflushIcon} class="${this.reloadingDatabase ? 'animate-spin' : ''}" />
             </div>
           </div>
           <clipper-ui-selector .placeholder=${'Select an database'} .selectedOption=${this.selectedOption} .onSelect=${(o: DatabaseInfo) => this.handleSelect(o)} .options=${this.options}></clipper-ui-selector>
@@ -80,7 +108,7 @@ export class ClipperConfig extends LitElement {
             <img src=${SaveIcon} />
             Save
           </button> 
-          <button class='rounded-md shadow-sm border w-auto px-2 py-1 inline-flex items-center gap-1 hover:bg-[#F4F4F5]' @click=${this.handleReset}>
+          <button class='rounded-md shadow-sm border w-auto px-2 py-1 inline-flex items-center gap-1 hover:bg-[#F4F4F5]' @click=${this.handleResetClick}>
             <img src=${ResetIcon} />
             Reset
           </button> 

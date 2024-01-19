@@ -16,7 +16,8 @@
   },
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "background": {
     "{{chrome}}.service_worker": "src/background.ts",

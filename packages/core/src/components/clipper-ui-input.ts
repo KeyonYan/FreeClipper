@@ -9,15 +9,13 @@ export class ClipperUiInput extends LitElement {
   @property({ type: Function }) onChangeValue: (...args: any) => any = () => {}
 
   handleInput(e: InputEvent) {
-    const target = e.target as HTMLDivElement
-    this.onChangeValue(target.textContent ?? '')
+    const target = e.target as HTMLInputElement
+    this.onChangeValue(target.value ?? '')
   }
 
   render() {
     return html`
-      <input class='border shadow-sm rounded-md focus:ring-1 p-2 w-full text-sm whitespace-nowrap overflow-hidden' @input=${this.handleInput} >
-        ${this.value}
-      </input>
+      <input class='border shadow-sm rounded-md focus:ring-1 p-2 w-full text-sm whitespace-nowrap overflow-hidden' @input=${this.handleInput} value=${this.value} />
     `
   }
 
