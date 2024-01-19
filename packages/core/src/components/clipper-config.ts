@@ -69,7 +69,9 @@ export class ClipperConfig extends LitElement {
         <div class='flex flex-col gap-2 justify-center w-full'>
           <div class='text-sm font-bold flex flex-row items-center gap-2'>
             Database
-            <img src=${ReflushIcon} @click=${this.reloadDatabaseOption} class="${this.reloadingDatabase ? 'animate-spin' : ''} cursor-pointer" />
+            <div class='cursor-pointer hover:bg-[#F4F4F5] flex justify-center items-center p-2 rounded-md'>
+              <img src=${ReflushIcon} @click=${this.reloadDatabaseOption} class="${this.reloadingDatabase ? 'animate-spin' : ''}" />
+            </div>
           </div>
           <clipper-ui-selector .placeholder=${'Select an database'} .selectedOption=${this.selectedOption} .onSelect=${(o: DatabaseInfo) => this.handleSelect(o)} .options=${this.options}></clipper-ui-selector>
         </div>
