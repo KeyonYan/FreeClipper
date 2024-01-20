@@ -175,14 +175,15 @@ export class DomInspector extends LitElement {
 
       this.toaster?.showToast(key, '✂  Clipping...')
       const blocks = parse2Block(this.hoveredElement as HTMLElement)
+      console.log(blocks)
       const databaseId = this.getClipDatabaseInfo()?.id
       if (databaseId) {
         uploadToNotion(blocks, this.getNotionKey(), databaseId)
-          .then(({ success, url }) => {
+          .then(({ success, url, message }) => {
             if (success)
               this.toaster?.updateToast(key, '✅ Clip Success', url)
             else
-              this.toaster?.updateToast(key, '❌ Clip Failed')
+              this.toaster?.updateToast(key, `❌ Clip Failed${message ? `: ${message}` : ''}`)
           })
       }
 

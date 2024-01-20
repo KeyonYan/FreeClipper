@@ -1,7 +1,10 @@
 import { richTextHandler } from './RichTextHandler'
 
 export function paragraphHandler(e: HTMLParagraphElement) {
-  return {
-    paragraph: { rich_text: richTextHandler(e) },
+  const richText = richTextHandler(e)
+  if (richText) {
+    return {
+      paragraph: { rich_text: richText },
+    }
   }
 }
