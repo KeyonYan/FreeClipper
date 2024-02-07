@@ -1,12 +1,12 @@
-import react from '@vitejs/plugin-react'
 import path from 'node:path'
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 import tailwindcss from 'tailwindcss'
-import { UserConfigExport } from 'vite'
+import type { UserConfigExport } from 'vite'
 import { name } from './package.json'
 
-const app = async (): Promise<UserConfigExport> => {
+async function app(): Promise<UserConfigExport> {
   /**
    * Removes everything before the last
    * @octocat/library-repo -> library-repo
@@ -21,6 +21,11 @@ const app = async (): Promise<UserConfigExport> => {
         insertTypesEntry: true,
       }),
     ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src/lib'),
+      },
+    },
     css: {
       postcss: {
         plugins: [tailwindcss],
@@ -31,16 +36,16 @@ const app = async (): Promise<UserConfigExport> => {
         entry: path.resolve(__dirname, 'src/lib/index.ts'),
         name: formattedName,
         formats: ['es', 'umd'],
-        fileName: (format) => `${formattedName}.${format}.js`,
+        fileName: format => `${formattedName}.${format}.js`,
       },
       rollupOptions: {
         external: ['react', 'react/jsx-runtime', 'react-dom', 'tailwindcss'],
         output: {
           globals: {
-            react: 'React',
+            'react': 'React',
             'react/jsx-runtime': 'react/jsx-runtime',
             'react-dom': 'ReactDOM',
-            tailwindcss: 'tailwindcss',
+            'tailwindcss': 'tailwindcss',
           },
         },
       },

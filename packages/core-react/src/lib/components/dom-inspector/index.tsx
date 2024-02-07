@@ -1,6 +1,9 @@
 import { useEventListener, useKeyPress, useUpdateEffect } from 'ahooks'
 import { useState } from 'react'
 import './index.css'
+import { Button } from '../ui/button'
+import { Toaster } from '../ui/toaster'
+import { useToast } from '../ui/use-toast'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -37,6 +40,7 @@ export function DomInspector(props: DomInspectorProps) {
   const [hoveredElement, setHoveredElement] = useState<HTMLElement | null>(null)
   const [hoveredHistoryElements, setHoveredHistoryElements] = useState<HTMLElement[]>([])
   const [preUserSelect, setPreUserSelect] = useState<string>('')
+  const { toast } = useToast()
 
   const renderCover = () => {
     if (!hoveredElement) {
@@ -186,6 +190,11 @@ export function DomInspector(props: DomInspectorProps) {
       e.preventDefault()
       console.log(hoveredElement)
       setIsClipping(true)
+      toast({
+        title: 'Clipped',
+        description: hoveredElement?.className,
+        duration: 3000,
+      })
       removeHoveredElement()
       setEnableInspect(false)
     },
@@ -215,6 +224,7 @@ export function DomInspector(props: DomInspectorProps) {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   )
 }
