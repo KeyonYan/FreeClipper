@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Input } from '../ui/input'
+import { Toaster } from '../ui/toaster'
 import { DbSelect } from './dbSelect'
 import { Button } from '@/components/ui/button'
 import {
@@ -60,16 +61,8 @@ export function ClipperConfig(props: ClipperConfigProps) {
   }, [])
 
   async function onSave(data: z.infer<typeof FormSchema>) {
-    const res1 = await setNotionKey(data.notionKey)
-    const res2 = await setClipDatabaseInfo(data.database)
-    toast({
-      title: 'Save FreeClipper Config:',
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+    await setNotionKey(data.notionKey)
+    await setClipDatabaseInfo(data.database)
   }
   return (
     <Form {...form}>

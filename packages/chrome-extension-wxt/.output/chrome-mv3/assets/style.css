@@ -849,8 +849,8 @@ video {
 .h-9 {
   height: 2.25rem;
 }
-.h-\[100px\] {
-  height: 100px;
+.h-\[160px\] {
+  height: 160px;
 }
 .h-auto {
   height: auto;
@@ -1990,6 +1990,10 @@ video {
 }
 .align-super {
   vertical-align: super;
+}
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
 }
 .text-\[0\.8rem\] {
   font-size: 0.8rem;

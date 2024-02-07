@@ -51,7 +51,7 @@ export function DbSelect(props: DbSelectProps) {
           </Button>
         </FormControl>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto h-[200px] p-0">
+      <PopoverContent align="start" className="w-auto h-[160px] p-0">
         <Command>
           <CommandInput placeholder="Search database..." />
           <CommandEmpty>No database found.</CommandEmpty>
