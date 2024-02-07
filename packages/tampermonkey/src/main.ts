@@ -32,6 +32,9 @@ configElement.setNotionKey = setNotionKey
 configElement.getClipDatabaseInfo = getClipDatabaseInfo
 configElement.setClipDatabaseInfo = setClipDatabaseInfo
 configElement.handleReset = handleReset
+configElement.style.position = 'fixed'
+configElement.style.top = '100px'
+configElement.style.right = '10px'
 document.body.appendChild(configElement)
 
 const toasterElement = document.createElement('clipper-ui-toaster')
