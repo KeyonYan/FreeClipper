@@ -1,5 +1,5 @@
 // 1. Import the style
-import './style.css'
+import '@/entrypoints/style.css'
 import ReactDOM from 'react-dom/client'
 import { Container } from './container.tsx'
 

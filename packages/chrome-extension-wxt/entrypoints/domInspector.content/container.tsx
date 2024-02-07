@@ -1,5 +1,5 @@
 import { DomInspector } from 'free-clipper-core-react'
-import { getNotionKey } from '@/utils/store.ts'
+import { getClipDatabaseInfo, getNotionKey } from '@/lib/store.ts'
 
 export function Container() {
   return (

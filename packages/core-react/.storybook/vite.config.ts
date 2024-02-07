@@ -1,11 +1,23 @@
+import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 import tailwindcss from 'tailwindcss'
-import { UserConfigExport } from 'vite'
+import type { UserConfigExport } from 'vite'
+import dts from 'vite-plugin-dts'
 
-const app = async (): Promise<UserConfigExport> => {
+async function app(): Promise<UserConfigExport> {
   return defineConfig({
-    plugins: [react()],
+    plugins: [
+      react(),
+      dts({
+        insertTypesEntry: true,
+      }),
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '../src/lib'),
+      },
+    },
     css: {
       postcss: {
         plugins: [tailwindcss],

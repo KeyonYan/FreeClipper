@@ -5,7 +5,10 @@
   ],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "moduleResolution": "nodenext",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "allowImportingTsExtensions": true
   }
 }
