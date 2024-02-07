@@ -31,12 +31,11 @@ const databases = [
 ]
 
 const FormSchema = z.object({
-  notionKey: z.string({
-    required_error: 'Please enter a Notion key.',
-  }),
-  database: z.string({
-    required_error: 'Please select a database.',
-  }),
+  notionKey: z.string({ required_error: 'Please enter a Notion key.' })
+    .min(32, { message: 'Notion key must be 32 characters long.' })
+    .max(32, { message: 'Notion key must be 32 characters long.' }),
+  database: z.string({ required_error: 'Please select a database.' })
+    .min(1),
 })
 
 export interface ClipperConfigProps {
@@ -53,10 +52,12 @@ export function ClipperConfig(props: ClipperConfigProps) {
   })
   useEffect(() => {
     getNotionKey().then((key) => {
-      form.setValue('notionKey', key || '')
+      if (key)
+        form.setValue('notionKey', key)
     })
     getClipDatabaseInfo().then((info) => {
-      form.setValue('database', info || '')
+      if (info)
+        form.setValue('database', info)
     })
   }, [])
 
