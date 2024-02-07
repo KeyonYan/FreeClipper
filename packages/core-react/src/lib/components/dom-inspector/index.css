@@ -1,0 +1,13 @@
+.element-info-top {
+  top: -4px;
+  transform: translateY(-100%);
+}
+.element-info-bottom {
+  top: calc(100% + 4px);
+}
+.element-info-top-inner {
+  top: 4px;
+}
+.element-info-bottom-inner {
+  bottom: 4px;
+}
