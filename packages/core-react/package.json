@@ -16,21 +16,17 @@
   "files": [
     "dist"
   ],
-  "engines": {
-    "node": "18"
-  },
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build",
-    "dev:lib-tsc": "tsc && vite build",
-    "dev:lib-vite": "tsc && vite build",
-    "dev:lib": "pnpm run \"/dev:.+/\"",
+    "dev:lib-tsc": "tsc --watch",
+    "dev:lib-vite": "vite build --watch",
+    "dev:lib": "pnpm run \"/dev:lib.+/\"",
     "build:lib": "tsc && vite build",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --fix",
     "prettier": "prettier --write \"src/**/*.{ts,tsx,js,mdx}\"",
     "test": "vitest",
     "test:cov": "vitest run --coverage",
-    "prepare": "husky install",
     "prepack": "json -f package.json -I -e \"delete this.devDependencies; delete this.dependencies\""
   },
   "peerDependencies": {
@@ -38,6 +34,7 @@
     "react-dom": "18.2.0"
   },
   "dependencies": {
+    "ahooks": "^3.7.10",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -68,7 +65,6 @@
     "eslint-plugin-promise": "6.1.1",
     "eslint-plugin-react": "7.33.1",
     "eslint-plugin-storybook": "0.6.13",
-    "husky": "8.0.3",
     "jsdom": "22.1.0",
     "json": "11.0.0",
     "lint-staged": "13.2.3",

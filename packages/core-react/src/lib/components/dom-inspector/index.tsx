@@ -20,11 +20,10 @@ interface DomInspectorProps {
   levelDownHotKey: string
   getNotionKey?: () => string
   getClipDatabaseInfo?: () => any
-  onToast: () => any
 }
 
 export function DomInspector(props: DomInspectorProps) {
-  const { toggleHotKey, levelUpHotKey, levelDownHotKey, onToast } = props
+  const { toggleHotKey, levelUpHotKey, levelDownHotKey } = props
   const [positionCssMap, setPositionCssMap] = useState<Record<'container' | 'margin' | 'border' | 'padding', Record<string, string>>>({
     container: {},
     margin: {},
@@ -187,7 +186,6 @@ export function DomInspector(props: DomInspectorProps) {
       e.preventDefault()
       console.log(hoveredElement)
       setIsClipping(true)
-      onToast()
       removeHoveredElement()
       setEnableInspect(false)
     },
