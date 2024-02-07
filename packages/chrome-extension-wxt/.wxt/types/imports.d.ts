@@ -13,5 +13,7 @@ declare global {
   const defineContentScript: typeof import('wxt/sandbox')['defineContentScript']
   const defineUnlistedScript: typeof import('wxt/sandbox')['defineUnlistedScript']
   const fakeBrowser: typeof import('wxt/testing')['fakeBrowser']
+  const getClipDatabaseInfo: typeof import('E:/Project/FreeClipper/packages/chrome-extension-wxt/utils/store')['getClipDatabaseInfo']
+  const getNotionKey: typeof import('E:/Project/FreeClipper/packages/chrome-extension-wxt/utils/store')['getNotionKey']
   const storage: typeof import('wxt/storage')['storage']
 }

@@ -1784,10 +1784,6 @@ video {
 .align-super {
   vertical-align: super;
 }
-.text-3xl {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-}
 .text-sm {
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -1861,10 +1857,6 @@ video {
   --tw-text-opacity: 1;
   color: rgb(59 130 246 / var(--tw-text-opacity));
 }
-.text-cyan-300 {
-  --tw-text-opacity: 1;
-  color: rgb(103 232 249 / var(--tw-text-opacity));
-}
 .text-slate-600 {
   --tw-text-opacity: 1;
   color: rgb(71 85 105 / var(--tw-text-opacity));
@@ -1909,9 +1901,6 @@ video {
 }
 .opacity-0 {
   opacity: 0;
-}
-.opacity-50 {
-  opacity: 0.5;
 }
 .opacity-90 {
   opacity: 0.9;

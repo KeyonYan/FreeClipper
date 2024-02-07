@@ -1,9 +1,8 @@
 import { useEventListener, useKeyPress, useUpdateEffect } from 'ahooks'
 import { useState } from 'react'
-import './index.css'
-import { Button } from '../ui/button'
 import { Toaster } from '../ui/toaster'
 import { useToast } from '../ui/use-toast'
+import './index.css'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -21,12 +20,12 @@ interface DomInspectorProps {
   toggleHotKey: string
   levelUpHotKey: string
   levelDownHotKey: string
-  getNotionKey?: () => string
-  getClipDatabaseInfo?: () => any
+  getNotionKey: () => Promise<string | null>
+  getClipDatabaseInfo: () => Promise<any | null>
 }
 
 export function DomInspector(props: DomInspectorProps) {
-  const { toggleHotKey, levelUpHotKey, levelDownHotKey } = props
+  const { toggleHotKey, levelUpHotKey, levelDownHotKey, getNotionKey, getClipDatabaseInfo } = props
   const [positionCssMap, setPositionCssMap] = useState<Record<'container' | 'margin' | 'border' | 'padding', Record<string, string>>>({
     container: {},
     margin: {},
@@ -182,7 +181,7 @@ export function DomInspector(props: DomInspectorProps) {
 
   useEventListener(
     'click',
-    (e) => {
+    async (e) => {
       if (!enableInspect || !showInspectContainer)
         return
       console.log('click')
@@ -190,9 +189,11 @@ export function DomInspector(props: DomInspectorProps) {
       e.preventDefault()
       console.log(hoveredElement)
       setIsClipping(true)
+      const notionKey = await getNotionKey()
+      const clipDataseInfo = await getClipDatabaseInfo()
       toast({
-        title: 'Clipped',
-        description: hoveredElement?.className,
+        title: '✂ isClipping',
+        description: `Clipping to database ${clipDataseInfo}; notionKey: ${notionKey}`,
         duration: 3000,
       })
       removeHoveredElement()

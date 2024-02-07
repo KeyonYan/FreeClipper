@@ -6,6 +6,9 @@ export default defineConfig({
   vite: () => ({
     plugins: [react()],
   }),
+  manifest: {
+    permissions: ['storage']
+  },
   runner: {
     startUrls: ['https://react-challenges-kappa.vercel.app/'],
   },
