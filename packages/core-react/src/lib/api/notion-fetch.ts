@@ -13,14 +13,15 @@ export function getClient(key: string) {
   return notion
 }
 
-export async function uploadToNotion(blocks: any[], key: string, databaseId: string) {
+export async function uploadToNotion(blocks: any[], key: string, databaseId: string, title: string) {
   try {
     const resp = await addNotionPageToDatabase(
       key,
       databaseId,
-      { title: { title: [{ text: { content: document.title } }] } },
+      { title: { title: [{ text: { content: title } }] } },
       blocks.slice(0, LIMIT_BLOCK_COUNT),
     )
+    console.log('notion-fetch:resp', resp)
     if (blocks.length > LIMIT_BLOCK_COUNT) {
       for (let i = LIMIT_BLOCK_COUNT; i < blocks.length; i += LIMIT_BLOCK_COUNT)
         await appendToNotionPage(key, resp.id, blocks.slice(i, i + LIMIT_BLOCK_COUNT))
@@ -28,6 +29,7 @@ export async function uploadToNotion(blocks: any[], key: string, databaseId: str
     return { success: true, url: resp.url }
   }
   catch (e: any) {
+    console.log('notion-fetch:error', e)
     return { success: false, message: e.code }
   }
 }

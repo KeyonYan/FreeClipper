@@ -6,7 +6,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "moduleResolution": "node16",
     "paths": {
       "@/*": ["./*"]
     },

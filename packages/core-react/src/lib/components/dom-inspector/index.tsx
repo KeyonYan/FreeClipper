@@ -19,16 +19,23 @@ function getBatchDomPropertyValue(target: HTMLElement, properties: string[]) {
   return result
 }
 
+export interface ClipResult {
+  success: boolean
+  message: string
+  url?: string
+}
+
 interface DomInspectorProps {
   toggleHotKey: string
   levelUpHotKey: string
   levelDownHotKey: string
   getNotionKey: () => Promise<string | null>
   getClipDatabaseInfo: () => Promise<DatabaseInfo | null>
+  onClip: (blocks: any, notionKey: string, clipDatabaseId: string, title: string) => Promise<ClipResult>
 }
 
 export function DomInspector(props: DomInspectorProps) {
-  const { toggleHotKey, levelUpHotKey, levelDownHotKey, getNotionKey, getClipDatabaseInfo } = props
+  const { toggleHotKey, levelUpHotKey, levelDownHotKey, getNotionKey, getClipDatabaseInfo, onClip } = props
   const [positionCssMap, setPositionCssMap] = useState<Record<'container' | 'margin' | 'border' | 'padding', Record<string, string>>>({
     container: {},
     margin: {},
@@ -193,8 +200,8 @@ export function DomInspector(props: DomInspectorProps) {
       console.log(hoveredElement)
       setIsClipping(true)
       const notionKey = await getNotionKey()
-      const clipDataseInfo = await getClipDatabaseInfo()
-      if (notionKey === null || clipDataseInfo === null) {
+      const clipDatabaseInfo = await getClipDatabaseInfo()
+      if (notionKey === null || clipDatabaseInfo === null) {
         toast({
           title: '❌ Clip Failed',
           description: `NotionKey or ClipDatabaseInfo is not set. Please set them in the extension.`,
@@ -205,13 +212,15 @@ export function DomInspector(props: DomInspectorProps) {
 
       toast({
         title: '✂ isClipping',
-        description: `Clipping to database ${clipDataseInfo}; notionKey: ${notionKey}`,
+        description: `Clipping to database ${clipDatabaseInfo}; notionKey: ${notionKey}`,
         duration: 3000,
       })
       const blocks = parse2Block(hoveredElement as HTMLElement)
       console.log(blocks)
-      const uploadRes = await uploadToNotion(blocks, notionKey, clipDataseInfo.id)
-      if (uploadRes.success) {
+      // const uploadRes = await uploadToNotion(blocks, notionKey, clipDataseInfo.id)
+      const uploadRes = await onClip(blocks, notionKey, clipDatabaseInfo.id, document.title)
+      console.log('core:uploadRes', uploadRes)
+      if (uploadRes?.success) {
         toast({
           title: '✅ Clip Success',
           description: `Open ${uploadRes.url}`,
@@ -221,7 +230,7 @@ export function DomInspector(props: DomInspectorProps) {
       else {
         toast({
           title: `❌ Clip Failed`,
-          description: `${uploadRes.message}`,
+          description: `${uploadRes.message ?? 'Unknown Error'}`,
           duration: 3000,
         })
       }
