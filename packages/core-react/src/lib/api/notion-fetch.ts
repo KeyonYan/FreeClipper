@@ -21,7 +21,6 @@ export async function uploadToNotion(blocks: any[], key: string, databaseId: str
       { title: { title: [{ text: { content: title } }] } },
       blocks.slice(0, LIMIT_BLOCK_COUNT),
     )
-    console.log('notion-fetch:resp', resp)
     if (blocks.length > LIMIT_BLOCK_COUNT) {
       for (let i = LIMIT_BLOCK_COUNT; i < blocks.length; i += LIMIT_BLOCK_COUNT)
         await appendToNotionPage(key, resp.id, blocks.slice(i, i + LIMIT_BLOCK_COUNT))

@@ -4,6 +4,7 @@ import { Toaster } from '../ui/toaster'
 import { useToast } from '../ui/use-toast'
 import './index.css'
 import type { DatabaseInfo } from '../clipper-config'
+import { ToastAction } from '../ui/toast'
 import { parse2Block } from './dom-parser'
 import { uploadToNotion } from '@/api/notion-fetch'
 
@@ -212,7 +213,7 @@ export function DomInspector(props: DomInspectorProps) {
 
       toast({
         title: '✂ isClipping',
-        description: `Clipping to database ${clipDatabaseInfo}; notionKey: ${notionKey}`,
+        description: `Clipping to database ${clipDatabaseInfo.name}`,
         duration: 3000,
       })
       const blocks = parse2Block(hoveredElement as HTMLElement)
@@ -223,8 +224,9 @@ export function DomInspector(props: DomInspectorProps) {
       if (uploadRes?.success) {
         toast({
           title: '✅ Clip Success',
-          description: `Open ${uploadRes.url}`,
+          description: `Open the notion page`,
           duration: 3000,
+          action: <ToastAction altText="Open" onClick={() => window.open(uploadRes.url)}>Open</ToastAction>,
         })
       }
       else {
