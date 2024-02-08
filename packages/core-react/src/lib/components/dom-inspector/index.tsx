@@ -3,6 +3,9 @@ import { useState } from 'react'
 import { Toaster } from '../ui/toaster'
 import { useToast } from '../ui/use-toast'
 import './index.css'
+import type { DatabaseInfo } from '../clipper-config'
+import { parse2Block } from './dom-parser'
+import { uploadToNotion } from '@/api/notion-fetch'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)
@@ -21,7 +24,7 @@ interface DomInspectorProps {
   levelUpHotKey: string
   levelDownHotKey: string
   getNotionKey: () => Promise<string | null>
-  getClipDatabaseInfo: () => Promise<any | null>
+  getClipDatabaseInfo: () => Promise<DatabaseInfo | null>
 }
 
 export function DomInspector(props: DomInspectorProps) {
@@ -191,11 +194,37 @@ export function DomInspector(props: DomInspectorProps) {
       setIsClipping(true)
       const notionKey = await getNotionKey()
       const clipDataseInfo = await getClipDatabaseInfo()
+      if (notionKey === null || clipDataseInfo === null) {
+        toast({
+          title: '❌ Clip Failed',
+          description: `NotionKey or ClipDatabaseInfo is not set. Please set them in the extension.`,
+          duration: 3000,
+        })
+        return
+      }
+
       toast({
         title: '✂ isClipping',
         description: `Clipping to database ${clipDataseInfo}; notionKey: ${notionKey}`,
         duration: 3000,
       })
+      const blocks = parse2Block(hoveredElement as HTMLElement)
+      console.log(blocks)
+      const uploadRes = await uploadToNotion(blocks, notionKey, clipDataseInfo.id)
+      if (uploadRes.success) {
+        toast({
+          title: '✅ Clip Success',
+          description: `Open ${uploadRes.url}`,
+          duration: 3000,
+        })
+      }
+      else {
+        toast({
+          title: `❌ Clip Failed`,
+          description: `${uploadRes.message}`,
+          duration: 3000,
+        })
+      }
       removeHoveredElement()
       setEnableInspect(false)
     },

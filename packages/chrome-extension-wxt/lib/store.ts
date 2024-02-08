@@ -1,3 +1,4 @@
+import type { DatabaseInfo } from 'free-clipper-core-react'
 import { storage } from 'wxt/storage'
 
 export async function getNotionKey() {
@@ -6,7 +7,7 @@ export async function getNotionKey() {
 }
 
 export async function getClipDatabaseInfo() {
-  const res = await storage.getItem<any>('local:freeclipper:clipDatabaseInfo')
+  const res = await storage.getItem<DatabaseInfo>('local:freeclipper:clipDatabaseInfo')
   return res
 }
 
@@ -15,7 +16,7 @@ export async function setNotionKey(key: string) {
   return res
 }
 
-export async function setClipDatabaseInfo(info: string) {
-  const res = await storage.setItem<any>('local:freeclipper:clipDatabaseInfo', info)
+export async function setClipDatabaseInfo(info: DatabaseInfo) {
+  const res = await storage.setItem<DatabaseInfo>('local:freeclipper:clipDatabaseInfo', info)
   return res
 }
