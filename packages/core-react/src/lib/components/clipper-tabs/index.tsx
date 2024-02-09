@@ -22,7 +22,7 @@ export function ClipperTabs(props: ClipperTabsProps) {
         ))}
       </TabsList>
       {tabs.map(tab => (
-        <TabsContent key={tab.value} value={tab.value}>
+        <TabsContent className="mt-4" key={tab.value} value={tab.value}>
           {tab.content}
         </TabsContent>
       ))}

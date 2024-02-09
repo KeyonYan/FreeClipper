@@ -25,7 +25,7 @@ function App() {
     },
   ]
   return (
-    <div className="w-[260px] h-auto flex flex-col p-4 justify-center items-start">
+    <div className="w-[260px] h-auto flex flex-col p-2 justify-start items-start">
       <ClipperTabs tabs={tabs} />
     </div>
   )
