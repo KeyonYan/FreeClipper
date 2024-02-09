@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { ClipperConfig, ClipperMode, ClipperTabs } from 'free-clipper-core-react'
-import { getClipDatabaseInfo, getNotionKey, setClipDatabaseInfo, setNotionKey } from '@/lib/store'
+import { getClipDatabaseInfo, getModeConfig, getNotionKey, setClipDatabaseInfo, setModeConfig, setNotionKey } from '@/lib/store'
 
 function App() {
   const tabs = [
@@ -20,7 +19,10 @@ function App() {
       value: 'mode',
       label: 'Mode',
       content: (
-        <ClipperMode />
+        <ClipperMode
+          getModeConfig={getModeConfig}
+          setModeConfig={setModeConfig}
+        />
       ),
     },
   ]
