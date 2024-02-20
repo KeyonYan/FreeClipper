@@ -6,7 +6,6 @@ import './index.css'
 import type { DatabaseInfo } from '../clipper-config'
 import { ToastAction } from '../ui/toast'
 import { parse2Block } from './dom-parser'
-import { uploadToNotion } from '@/api/notion-fetch'
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
   const computedStyle = window.getComputedStyle(target)

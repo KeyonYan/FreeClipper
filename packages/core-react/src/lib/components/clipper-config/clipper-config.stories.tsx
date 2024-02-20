@@ -1,6 +1,6 @@
-import type { Meta, StoryFn } from '@storybook/react'
+import type { Meta } from '@storybook/react'
 import { ClipperConfig } from './index'
-import type { ClipperConfigProps, DatabaseInfo } from './index'
+import type { DatabaseInfo } from './index'
 
 const meta: Meta<typeof ClipperConfig> = {
   title: 'ClipperConfig',

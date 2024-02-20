@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [react()],
   }),
   manifest: {
-    permissions: ['storage']
+    permissions: ['storage'],
   },
   runner: {
     startUrls: ['https://react-challenges-kappa.vercel.app/'],

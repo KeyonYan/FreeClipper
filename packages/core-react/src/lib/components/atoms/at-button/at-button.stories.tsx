@@ -1,8 +1,9 @@
 import React from 'react'
-import { AtButton, AtButtonProps, AT_BUTTON_VARIANT } from '.'
+import type { Meta, StoryFn } from '@storybook/react'
+
 import { objectValuesToControls } from '../../../storybook-utils'
-import { Meta } from '@storybook/react'
-import { StoryFn } from '@storybook/react'
+import { AT_BUTTON_VARIANT, AtButton } from '.'
+import type { AtButtonProps } from '.'
 
 // More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 const meta: Meta<typeof AtButton> = {
