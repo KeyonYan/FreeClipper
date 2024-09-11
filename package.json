@@ -1,20 +1,17 @@
 {
-  "name": "free-clipper",
-  "type": "module",
-  "version": "0.0.1",
-  "license": "ISC",
-  "keywords": [],
-  "scripts": {
-    "lint": "eslint .",
-    "dev:ce": "pnpm --filter=free-clipper-chrome-extension dev",
-    "dev:core": "pnpm --filter=free-clipper-core dev",
-    "dev:us": "pnpm --filter=free-clipper-tampermonkey dev"
-  },
-  "devDependencies": {
-    "@antfu/eslint-config": "^2.6.0",
-    "@changesets/cli": "^2.27.1",
-    "eslint": "^8.56.0",
-    "typescript": "^5.3.2",
-    "vite": "^5.0.10"
-  }
+	"name": "free-clipper",
+	"type": "module",
+	"version": "0.0.1",
+	"license": "ISC",
+	"keywords": [],
+	"scripts": {
+		"lint": "biome lint --write",
+		"format": "biome format --write"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.8.3",
+		"typescript": "^5.3.2",
+		"vite": "^5.0.10"
+	},
+	"packageManager": "pnpm@9.9.0"
 }
