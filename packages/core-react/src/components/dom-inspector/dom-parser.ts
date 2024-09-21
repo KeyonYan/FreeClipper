@@ -1,7 +1,8 @@
+import type { BlockObjectRequest } from "@notionhq/client/build/src/api-endpoints";
 import { commonHandler } from "./handler/handler";
 
 export function parse2Block(e: HTMLElement) {
-	const blocks: any[] = [];
+	const blocks: BlockObjectRequest[] = [];
 
 	function traversalChildren(e: HTMLElement) {
 		const block = commonHandler(e);

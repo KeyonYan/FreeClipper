@@ -1,3 +1,4 @@
+import type { toast } from "@/components/ui/use-toast";
 import type { DatabaseInfo } from "../clipper-config";
 
 export interface ClipResult {
@@ -10,9 +11,7 @@ export interface DomInspectorProps {
 	toggleHotKey: string;
 	levelUpHotKey: string;
 	levelDownHotKey: string;
-	getNotionKey: () => Promise<string | null>;
-	getClipDatabaseInfo: () => Promise<DatabaseInfo | null>;
-	onClip: (blocks: any, notionKey: string, clipDatabaseId: string, title: string) => Promise<ClipResult>;
+	handleClip: (element: HTMLElement, t: typeof toast) => Promise<void>;
 }
 
 export type PositionCssMap = Record<"container" | "margin" | "border" | "padding", Record<string, string>>;

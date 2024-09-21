@@ -1,7 +1,7 @@
 import type { DatabaseInfo } from "free-clipper-core-react";
 import { storage } from "wxt/storage";
 
-const enum LocalStorageKeys {
+enum LocalStorageKeys {
 	NotionKey = "local:freeclipper:notionKey",
 	NotionDatabaseInfo = "local:freeclipper:clipDatabaseInfo",
 	ClipperModeConfig = "local:freeclipper:modeConfig",

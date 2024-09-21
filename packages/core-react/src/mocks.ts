@@ -26,7 +26,7 @@ export async function setClipDatabaseInfo(info: DatabaseInfo) {
 	localStorage.setItem(LocalStorageKeys.NotionDatabaseInfo, JSON.stringify(info));
 }
 
-export function getModeConfig() {
+export async function getModeConfig() {
 	const res = localStorage.getItem(LocalStorageKeys.ClipperModeConfig);
 	if (!res) {
 		return {};

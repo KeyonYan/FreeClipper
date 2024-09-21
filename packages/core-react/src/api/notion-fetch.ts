@@ -1,5 +1,10 @@
 import { Client } from "@notionhq/client";
-import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import type {
+	BlockObjectRequest,
+	CreatePageParameters,
+	DatabaseObjectResponse,
+	PageObjectResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 import type { SearchParameters } from "@notionhq/client/build/src/api-endpoints";
 
 const LIMIT_BLOCK_COUNT = 50;
@@ -15,14 +20,14 @@ export function getClient(key: string) {
 			if (import.meta.env.VITE_NOTION_PROXY) {
 				url = import.meta.env.VITE_NOTION_PROXY + url;
 			}
-			
+
 			return fetch(url, init);
 		},
 	});
 	return notion;
 }
 
-export async function uploadToNotion(blocks: any[], key: string, databaseId: string, title: string) {
+export async function uploadToNotion(blocks: BlockObjectRequest[], key: string, databaseId: string, title: string) {
 	try {
 		const resp = await addNotionPageToDatabase(
 			key,
@@ -41,18 +46,21 @@ export async function uploadToNotion(blocks: any[], key: string, databaseId: str
 	}
 }
 
-export async function addNotionPageToDatabase(key: string, databaseId: string, pageProperties: any, blocks?: any[]) {
+export async function addNotionPageToDatabase(
+	key: string,
+	databaseId: string,
+	pageProperties: CreatePageParameters["properties"],
+	blocks?: BlockObjectRequest[],
+) {
 	const newPage = await getClient(key).pages.create({
-		parent: {
-			database_id: databaseId,
-		},
+		parent: { database_id: databaseId },
 		properties: pageProperties,
 		children: blocks,
 	});
 	return newPage as PageObjectResponse;
 }
 
-export async function appendToNotionPage(key: string, pageId: string, blocks: any[]) {
+export async function appendToNotionPage(key: string, pageId: string, blocks: BlockObjectRequest[]) {
 	await getClient(key).blocks.children.append({
 		block_id: pageId,
 		children: blocks,
@@ -60,6 +68,8 @@ export async function appendToNotionPage(key: string, pageId: string, blocks: an
 }
 
 export async function searchNotionDatabase(key: string, title?: string) {
+	if (!key) return [];
+
 	const searchParam: SearchParameters = {
 		filter: {
 			value: "database",
@@ -72,6 +82,7 @@ export async function searchNotionDatabase(key: string, title?: string) {
 	};
 
 	if (title) searchParam.query = title;
+
 	const resp = await getClient(key).search(searchParam);
-	return resp;
+	return resp.results as DatabaseObjectResponse[];
 }

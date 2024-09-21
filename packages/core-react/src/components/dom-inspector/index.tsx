@@ -4,8 +4,6 @@ import { useEventListener, useKeyPress, useUpdateEffect } from "ahooks";
 import { useState } from "react";
 import { Toaster } from "../ui/toaster";
 import { useToast } from "../ui/use-toast";
-import { ToastAction } from "../ui/toast";
-import { parse2Block } from "./dom-parser";
 import type { DomInspectorProps, PositionCssMap } from "./types";
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
@@ -22,7 +20,7 @@ function getBatchDomPropertyValue(target: HTMLElement, properties: string[]) {
 }
 
 export function DomInspector(props: DomInspectorProps) {
-	const { toggleHotKey, levelUpHotKey, levelDownHotKey, getNotionKey, getClipDatabaseInfo, onClip } = props;
+	const { toggleHotKey, levelUpHotKey, levelDownHotKey, handleClip } = props;
 	const [positionCssMap, setPositionCssMap] = useState<PositionCssMap>({
 		container: {},
 		margin: {},
@@ -92,19 +90,19 @@ export function DomInspector(props: DomInspectorProps) {
 				"--pr": pr,
 				"--pb": pb,
 				"--pl": pl,
-				top: `calc(var(--top) - var(--mt))`,
-				left: `calc(var(--left) - var(--ml))`,
-				height: `calc(var(--bottom) - var(--top) + var(--mb) + var(--mt))`,
-				width: `calc(var(--right) - var(--left) + var(--mr) + var(--ml))`,
+				top: "calc(var(--top) - var(--mt))",
+				left: "calc(var(--left) - var(--ml))",
+				height: "calc(var(--bottom) - var(--top) + var(--mb) + var(--mt))",
+				width: "calc(var(--right) - var(--left) + var(--mr) + var(--ml))",
 			},
 			margin: {
-				borderWidth: `var(--mt) var(--mr) var(--mb) var(--ml)`,
+				borderWidth: "var(--mt) var(--mr) var(--mb) var(--ml)",
 			},
 			border: {
-				borderWidth: `var(--bt) var(--br) var(--bb) var(--bl)`,
+				borderWidth: "var(--bt) var(--br) var(--bb) var(--bl)",
 			},
 			padding: {
-				borderWidth: `var(--pt) var(--pr) var(--pb) var(--pl)`,
+				borderWidth: "var(--pt) var(--pr) var(--pb) var(--pl)",
 			},
 		});
 
@@ -201,50 +199,13 @@ export function DomInspector(props: DomInspectorProps) {
 	useEventListener(
 		"click",
 		async (e) => {
-			if (!enableInspect || !showInspectContainer) return;
+			if (!enableInspect || !showInspectContainer || !hoveredElement) return;
 
 			e.stopPropagation();
 			e.preventDefault();
 
-			console.log(hoveredElement);
+			await handleClip(hoveredElement, toast);
 
-			const notionKey = await getNotionKey();
-			const clipDatabaseInfo = await getClipDatabaseInfo();
-			if (notionKey === null || clipDatabaseInfo === null) {
-				toast({
-					title: "❌ Clip Failed",
-					description: `NotionKey or ClipDatabaseInfo is not set. Please set them in the extension.`,
-					duration: 3000,
-				});
-				return;
-			}
-
-			toast({
-				title: "✂ isClipping",
-				description: `Clipping to database ${clipDatabaseInfo.name}`,
-				duration: 3000,
-			});
-
-			const blocks = parse2Block(hoveredElement as HTMLElement);
-			const uploadRes = await onClip(blocks, notionKey, clipDatabaseInfo.id, document.title);
-			if (uploadRes?.success) {
-				toast({
-					title: "✅ Clip Success",
-					description: `Open the notion page`,
-					duration: 3000,
-					action: (
-						<ToastAction altText="Open" onClick={() => window.open(uploadRes.url)}>
-							Open
-						</ToastAction>
-					),
-				});
-			} else {
-				toast({
-					title: `❌ Clip Failed`,
-					description: `${uploadRes.message ?? "Unknown Error"}`,
-					duration: 3000,
-				});
-			}
 			removeHoveredElement();
 			setEnableInspect(false);
 		},

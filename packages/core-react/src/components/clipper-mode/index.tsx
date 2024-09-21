@@ -1,23 +1,8 @@
-import { useEffect, useState } from "react";
 import type { CheckedState } from "@radix-ui/react-checkbox";
+import { useEffect, useState } from "react";
 import { Checkbox } from "../ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import type { ClipperModeProps, Mode, ModeCheckboxProps } from "./types";
-
-function ModeCheckbox(props: ModeCheckboxProps) {
-	const { modeKey, open, mode, onCheckedChange } = props;
-	return (
-		<div className="flex items-center space-x-2">
-			<Checkbox id={modeKey} checked={open} onCheckedChange={(checked) => onCheckedChange(checked, modeKey)} />
-			<label
-				htmlFor={modeKey}
-				className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-			>
-				{mode}
-			</label>
-		</div>
-	);
-}
 
 export function ClipperMode(props: ClipperModeProps) {
 	const { getModeConfig, setModeConfig } = props;
@@ -51,9 +36,11 @@ export function ClipperMode(props: ClipperModeProps) {
 		setModes(newModes);
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: This effect should only run once
 	useEffect(() => {
 		initModeConfig();
 	}, []);
+
 	const onCheckedChange = (checked: CheckedState, key: string) => {
 		const newModes = modes.map((mode) => {
 			if (mode.key === key) mode.open = checked === true;
@@ -73,16 +60,28 @@ export function ClipperMode(props: ClipperModeProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{modes.map((mode) => (
-				<TooltipProvider key={mode.key}>
-					<Tooltip>
-						<TooltipTrigger>
-							<ModeCheckbox modeKey={mode.key} open={mode.open} mode={mode.mode} onCheckedChange={onCheckedChange} />
-						</TooltipTrigger>
-						<TooltipContent>
-							<p>{mode.modeDesc}</p>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
+				<div className="flex items-center space-x-2" key={mode.key}>
+					<Checkbox
+						id={mode.key}
+						checked={mode.open}
+						onCheckedChange={(checked) => onCheckedChange(checked, mode.key)}
+					/>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<label
+									htmlFor={mode.key}
+									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+								>
+									{mode.mode}
+								</label>
+							</TooltipTrigger>
+							<TooltipContent align="start">
+								<p>{mode.modeDesc}</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+				</div>
 			))}
 		</div>
 	);

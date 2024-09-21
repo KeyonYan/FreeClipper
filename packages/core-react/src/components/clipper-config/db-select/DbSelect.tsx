@@ -1,13 +1,13 @@
+import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { FormControl } from "@/components/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import React, { useState } from "react";
-import { FormControl } from "@/components/ui/form";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { DatabaseInfo } from "../index";
 import { SelectedOption } from "./SelectedOption";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/utils";
 
 interface DbSelectProps {
 	selectedId: string;
@@ -43,27 +43,23 @@ export const DbSelect = React.forwardRef((props: DbSelectProps, ref: React.Ref<H
 					<CommandEmpty>No database found.</CommandEmpty>
 					<ScrollArea>
 						<CommandGroup>
-							{options &&
-								options.map((option) => (
-									<CommandItem
-										className="flex flex-row justify-between"
-										value={option.name}
-										key={option.id}
-										onSelect={() => handleSelectClick(option.id)}
-									>
-										<div className="flex flex-row gap-2 items-start">
-											<div>{option.icon.emoji}</div>
-											<div>{option.name}</div>
-										</div>
-										<Check className={cn("mr-2 h-4 w-4", option.id === selectedId ? "opacity-100" : "opacity-0")} />
-									</CommandItem>
-								))}
+							{options.map((option) => (
+								<CommandItem
+									className="flex flex-row justify-between"
+									value={option.name}
+									key={option.id}
+									onSelect={() => handleSelectClick(option.id)}
+								>
+									<div className="flex flex-row gap-2 items-start">
+										<div>{option.name}</div>
+									</div>
+									<Check className={cn("mr-2 h-4 w-4", option.id === selectedId ? "opacity-100" : "opacity-0")} />
+								</CommandItem>
+							))}
 						</CommandGroup>
 					</ScrollArea>
 				</Command>
 			</PopoverContent>
 		</Popover>
 	);
-
-})
-
+});
