@@ -1,17 +1,11 @@
+import type { confirm } from "@/components/ui/use-modal";
 import type { toast } from "@/components/ui/use-toast";
-import type { DatabaseInfo } from "../clipper-config";
-
-export interface ClipResult {
-	success: boolean;
-	message: string;
-	url?: string;
-}
 
 export interface DomInspectorProps {
 	toggleHotKey: string;
 	levelUpHotKey: string;
 	levelDownHotKey: string;
-	handleClip: (element: HTMLElement, t: typeof toast) => Promise<void>;
+	handleClip: (element: HTMLElement, t: typeof toast, d: typeof confirm) => Promise<void>;
 }
 
 export type PositionCssMap = Record<"container" | "margin" | "border" | "padding", Record<string, string>>;

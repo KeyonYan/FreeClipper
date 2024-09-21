@@ -1,11 +1,12 @@
 import { ToastAction } from "@/components/ui/toast";
+import { chat } from "@/utils/chat";
 import type { Meta, StoryObj } from "@storybook/react";
 import { HTMLarkdown } from "htmlarkdown";
 import React from "react";
 import { LocalStorageKeys } from "../../consts";
 import { getClipDatabaseInfo, getNotionKey } from "../../mocks";
 import { parse2Block } from "./dom-parser";
-import { InspectorTargetExample } from "./example";
+import { InspectorDialogContent, InspectorTargetExample } from "./example";
 import { DomInspector } from "./index";
 
 const meta: Meta<typeof DomInspector> = {
@@ -21,25 +22,55 @@ const meta: Meta<typeof DomInspector> = {
 		),
 	],
 	args: {
-		handleClip: async (element, toast) => {
-			console.log(element);
+		handleClip: async (element, toast, confirm) => {
 			const htmlarkdown = new HTMLarkdown({
 				urlTransformer: (url, element, options) => {
 					return `http://www.baidu.com/${url}`;
 				},
 			});
 
-			const res = htmlarkdown.convert(element);
-			console.log(res);
+			// const res = htmlarkdown.convert(element);
+
+			const { update, dismiss } = toast({
+				title: "initiating chat...",
+				duration: 60_000,
+			});
+
+			const res = await chat("what's your name", (payload) => {
+				if (payload.status === "progress") {
+					update({
+						title: `Loading ${payload.name}...`,
+						progress: payload.progress,
+					});
+				}
+				if (payload.status === "ready") {
+					update({
+						title: `Model ${payload.model} is ready for ${payload.task}...`,
+						progress: 100,
+					});
+				}
+				if (payload.status === "start_inference") {
+					update({
+						title: "Start Inference...",
+						progress: 100,
+					});
+				}
+
+				if (payload.status === "complete") {
+					dismiss();
+
+					confirm({
+						title: "Chat Result",
+						description: `elapsed: ${payload.elapsed / 1000}s`,
+						body: JSON.stringify(payload.output),
+					});
+				}
+			});
 
 			// const notionKey = await getNotionKey();
 			// const clipDatabaseInfo = await getClipDatabaseInfo();
 			// if (notionKey === null || clipDatabaseInfo === null) {
-			// 	toast({
-			// 		title: "❌ Clip Failed",
-			// 		description: "NotionKey or ClipDatabaseInfo is not set. Please set them in the extension.",
-			// 		duration: 3000,
-			// 	});
+
 			// 	return;
 			// }
 

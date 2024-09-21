@@ -2,8 +2,12 @@ import "./index.css";
 
 import { useEventListener, useKeyPress, useUpdateEffect } from "ahooks";
 import { useState } from "react";
+
+import { Modal } from "../ui/modal";
 import { Toaster } from "../ui/toaster";
-import { useToast } from "../ui/use-toast";
+import { confirm } from "../ui/use-modal";
+import { toast } from "../ui/use-toast";
+
 import type { DomInspectorProps, PositionCssMap } from "./types";
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
@@ -34,7 +38,6 @@ export function DomInspector(props: DomInspectorProps) {
 	const [hoveredElement, setHoveredElement] = useState<HTMLElement | null>(null);
 	const [hoveredHistoryElements, setHoveredHistoryElements] = useState<HTMLElement[]>([]);
 	const [preUserSelect, setPreUserSelect] = useState<string>("");
-	const { toast } = useToast();
 
 	const renderCover = () => {
 		if (!hoveredElement) {
@@ -204,7 +207,7 @@ export function DomInspector(props: DomInspectorProps) {
 			e.stopPropagation();
 			e.preventDefault();
 
-			await handleClip(hoveredElement, toast);
+			await handleClip(hoveredElement, toast, confirm);
 
 			removeHoveredElement();
 			setEnableInspect(false);
@@ -225,13 +228,14 @@ export function DomInspector(props: DomInspectorProps) {
 						</div>
 					</div>
 				</div>
-				<div className={`absolute ${infoClassName} left-1/2 -translate-x-1/2`}>
+				<div className={`absolute left-1/2 -translate-x-1/2 ${infoClassName}`}>
 					<span className="max-w-full text-sm bg-sky-600 text-red break-all shadow py-1 px-2 rounded text-nowrap">
 						Click to Clip {hoveredElement?.className}
 					</span>
 				</div>
 			</div>
 			<Toaster />
+			<Modal />
 		</div>
 	);
 }
