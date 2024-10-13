@@ -100,20 +100,24 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;
 type ToastActionElement = React.ReactElement<typeof ToastAction>;
 
 const ToastProgress = ({ duration, progress }: { duration?: number; progress?: number }) => {
+	if (typeof progress === "number") {
+		return <Progress className="absolute bottom-0 left-0 h-1 rounded-none" value={progress} />;
+	}
+
 	const [precent, setPrecent] = React.useState(0);
 
 	React.useEffect(() => {
-		if (progress || !duration) return;
+		if (!duration) return;
 		const interval = setInterval(() => {
 			setPrecent((prev) => {
 				return (prev * duration + 100) / duration;
 			});
 		}, 100);
 		return () => clearInterval(interval);
-	}, [duration, progress]);
+	}, [duration]);
 
-	if (progress || precent) {
-		return <Progress className="absolute bottom-0 left-0 h-1 rounded-none" value={progress || precent * 100} />;
+	if (precent) {
+		return <Progress className="absolute bottom-0 left-0 h-1 rounded-none" value={precent * 100} />;
 	}
 
 	return null;

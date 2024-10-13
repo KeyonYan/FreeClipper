@@ -5,7 +5,7 @@ export type LLMSendMessage = {
 	text: string;
 };
 
-export type LLMOutPutMessage =
+export type LLMOutputMessage =
 	| {
 			status: "complete";
 			output: TextGenerationOutput[];
@@ -35,7 +35,7 @@ type LLMLoadMessage =
 			model: string;
 	  };
 
-type LLMWorkerMessage = LLMLoadMessage | LLMOutPutMessage;
+type LLMWorkerMessage = LLMLoadMessage | LLMOutputMessage;
 
 let worker: null | Worker = null;
 

@@ -1,32 +1,42 @@
-import { Button } from "./button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./dialog";
+import { cn } from "@/utils";
+import type React from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./dialog";
 import { useModal } from "./use-modal";
+import type { ModalState } from "./use-modal";
 
 export interface ModalProps {
-	body?: React.ReactNode;
-	title?: string;
+	type?: "dialog";
+	body: React.ReactNode;
+	title: string;
 	description?: string;
 }
 
 export function Modal() {
-	const { open, onOpenChange, modal } = useModal();
+	const { modals } = useModal();
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[425px]">
-				{modal.title ? (
+		<>
+			{modals.map((modal) => (
+				<DialogModal key={modal.id} {...modal} />
+			))}
+		</>
+	);
+}
+
+function DialogModal({ open, onOpenChange, ...props }: ModalState) {
+	return (
+		<>
+			<Dialog open={open} onOpenChange={onOpenChange}>
+				<DialogContent className={"sm:max-w-[425px]"}>
 					<DialogHeader>
-						<DialogTitle>{modal.title}</DialogTitle>
-						{modal.description && <DialogDescription>{modal.description}</DialogDescription>}
+						<DialogTitle>{props.title}</DialogTitle>
+						<DialogDescription className={cn(props.description ? "block" : "hidden")}>
+							{props.description || props.title}
+						</DialogDescription>
 					</DialogHeader>
-				) : null}
-				{modal.body}
-				<DialogFooter>
-					<Button type="button" onClick={() => onOpenChange(false)}>
-						Okey
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+					{props.body}
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }

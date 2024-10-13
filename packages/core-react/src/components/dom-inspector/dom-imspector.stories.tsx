@@ -1,12 +1,6 @@
-import { ToastAction } from "@/components/ui/toast";
 import { chat } from "@/utils/chat";
 import type { Meta, StoryObj } from "@storybook/react";
-import { HTMLarkdown } from "htmlarkdown";
-import React from "react";
-import { LocalStorageKeys } from "../../consts";
-import { getClipDatabaseInfo, getNotionKey } from "../../mocks";
-import { parse2Block } from "./dom-parser";
-import { InspectorDialogContent, InspectorTargetExample } from "./example";
+import { InspectorTargetExample } from "./example";
 import { DomInspector } from "./index";
 
 const meta: Meta<typeof DomInspector> = {
@@ -23,17 +17,10 @@ const meta: Meta<typeof DomInspector> = {
 	],
 	args: {
 		handleClip: async (element, toast, confirm) => {
-			const htmlarkdown = new HTMLarkdown({
-				urlTransformer: (url, element, options) => {
-					return `http://www.baidu.com/${url}`;
-				},
-			});
-
-			// const res = htmlarkdown.convert(element);
-
 			const { update, dismiss } = toast({
 				title: "initiating chat...",
 				duration: 60_000,
+				progress: 0,
 			});
 
 			const res = await chat("what's your name", (payload) => {
@@ -46,13 +33,13 @@ const meta: Meta<typeof DomInspector> = {
 				if (payload.status === "ready") {
 					update({
 						title: `Model ${payload.model} is ready for ${payload.task}...`,
-						progress: 100,
+						progress: 0,
 					});
 				}
 				if (payload.status === "start_inference") {
 					update({
 						title: "Start Inference...",
-						progress: 100,
+						progress: 0,
 					});
 				}
 
