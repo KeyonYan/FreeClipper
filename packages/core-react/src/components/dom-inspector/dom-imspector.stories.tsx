@@ -23,7 +23,7 @@ const meta: Meta<typeof DomInspector> = {
 				progress: 0,
 			});
 
-			const res = await chat("what's your name", (payload) => {
+			const res = await chat(element.textContent ?? "", (payload) => {
 				if (payload.status === "progress") {
 					update({
 						title: `Loading ${payload.name}...`,
@@ -57,7 +57,6 @@ const meta: Meta<typeof DomInspector> = {
 			// const notionKey = await getNotionKey();
 			// const clipDatabaseInfo = await getClipDatabaseInfo();
 			// if (notionKey === null || clipDatabaseInfo === null) {
-
 			// 	return;
 			// }
 

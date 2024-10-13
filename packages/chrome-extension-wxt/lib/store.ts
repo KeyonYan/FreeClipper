@@ -35,5 +35,4 @@ export async function getModeConfig() {
 
 export async function setModeConfig(modeConfig: Record<string, boolean>) {
 	await storage.setItem<Record<string, boolean>>(LocalStorageKeys.ClipperModeConfig, modeConfig);
-	console.log("setModeConfig", modeConfig);
 }
