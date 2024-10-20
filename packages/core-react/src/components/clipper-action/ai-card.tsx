@@ -27,7 +27,7 @@ export function ChatbotCardContent({ prompt }: ChatbotResultProps) {
 	return (
 		<>
 			{message}
-			{true && <Loader2Icon size={16} className="animate-spin" />}
+			{loading && <Loader2Icon size={16} className="animate-spin" />}
 		</>
 	);
 }
