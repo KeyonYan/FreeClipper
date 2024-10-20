@@ -3,10 +3,8 @@ import "./index.css";
 import { useEventListener, useKeyPress, useUpdateEffect } from "ahooks";
 import { useState } from "react";
 
-import { Modal } from "../ui/modal";
-import { Toaster } from "../ui/toaster";
-import { confirm } from "../ui/use-modal";
-import { toast } from "../ui/use-toast";
+import { confirm } from "@/components/ui/use-modal";
+import { toast } from "@/components/ui/use-toast";
 
 import type { DomInspectorProps, PositionCssMap } from "./types";
 
@@ -234,8 +232,6 @@ export function DomInspector(props: DomInspectorProps) {
 					</span>
 				</div>
 			</div>
-			<Toaster />
-			<Modal />
 		</div>
 	);
 }

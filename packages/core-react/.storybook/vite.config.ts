@@ -17,16 +17,6 @@ async function app(): Promise<UserConfigExport> {
 				"@": path.resolve(__dirname, "../src"),
 			},
 		},
-		server: {
-			port: 6007,
-			proxy: {
-				"/api": {
-					target: "https://api.notion.com/v1",
-					changeOrigin: true,
-					rewrite: (path) => path.replace(/^\/api/, ""),
-				},
-			},
-		},
 	});
 }
 // https://vitejs.dev/config/

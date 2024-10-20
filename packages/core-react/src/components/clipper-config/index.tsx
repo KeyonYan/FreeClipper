@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "../ui/input";
 import { Toaster } from "../ui/toaster";
-import { DbSelect } from "./db-select/DbSelect";
+import { DbSelect } from "./db-select/db-select";
 
 const FormSchema = z.object({
 	notionKey: z.string({ required_error: "Please enter a Notion key." }),

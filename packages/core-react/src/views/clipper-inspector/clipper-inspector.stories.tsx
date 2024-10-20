@@ -1,89 +1,8 @@
-import {
-	Menubar,
-	MenubarContent,
-	MenubarItem,
-	MenubarMenu,
-	MenubarSeparator,
-	MenubarShortcut,
-	MenubarTrigger,
-} from "@/components/ui/menubar";
-import { chat } from "@/utils/chat";
-import { ChatBubbleIcon, ClipboardCopyIcon, NotionLogoIcon } from "@radix-ui/react-icons";
+import { actionbarAtom } from "@/components/clipper-action";
+import { Provider, store } from "@/components/clipper-provider";
+import { DomInspector } from "@/components/dom-inspector";
 import type { Meta, StoryObj } from "@storybook/react";
-
-import { Provider, atom, createStore, useAtom } from "jotai";
-import { useRef } from "react";
-import { useEventListener } from "usehooks-ts";
-import { useModal } from "../ui/use-modal";
 import { InspectorTargetExample } from "./example";
-import { DomInspector } from "./index";
-
-const store = createStore();
-
-interface ActionbarAtom {
-	show: boolean;
-	target?: HTMLElement;
-	position?: React.CSSProperties;
-}
-
-const actionbarAtom = atom<ActionbarAtom>({
-	show: false,
-});
-
-function Actionbar() {
-	const [actionbarState, setActionbarState] = useAtom(actionbarAtom);
-	const ref = useRef<HTMLDivElement>(null);
-
-	useEventListener("click", (e) => {
-		if (ref.current && !ref.current.contains(e.target as Node)) {
-			setActionbarState((state) => ({ ...state, show: false }));
-		}
-	});
-
-	if (!actionbarState.show) return;
-
-	let position = actionbarState.position;
-	if (!position && actionbarState.target) {
-		const { top, left, bottom, width } = actionbarState.target.getBoundingClientRect();
-		const browserHeight = document.documentElement.clientHeight;
-		const bottomToViewPort = browserHeight - bottom;
-		const topToViewPort = top;
-		position = {
-			top: topToViewPort > bottomToViewPort ? top : bottom,
-			left: left + width / 2,
-			transform: "translateX(-50%)",
-		};
-	}
-
-	return (
-		<Menubar ref={ref} className="fixed m-2" style={position}>
-			<MenubarMenu>
-				<MenubarTrigger>
-					<span className="inline-flex items-center gap-1">
-						<ChatBubbleIcon />
-						Chat
-					</span>
-				</MenubarTrigger>
-			</MenubarMenu>
-			<MenubarMenu>
-				<MenubarTrigger>
-					<span className="inline-flex items-center gap-1">
-						<ClipboardCopyIcon />
-						To Markdown
-					</span>
-				</MenubarTrigger>
-			</MenubarMenu>
-			<MenubarMenu>
-				<MenubarTrigger>
-					<span className="inline-flex items-center gap-1">
-						<NotionLogoIcon />
-						To Notion
-					</span>
-				</MenubarTrigger>
-			</MenubarMenu>
-		</Menubar>
-	);
-}
 
 const meta: Meta<typeof DomInspector> = {
 	title: "DomInspector",
@@ -92,10 +11,9 @@ const meta: Meta<typeof DomInspector> = {
 	decorators: [
 		(Story) => (
 			<>
-				<Provider store={store}>
+				<Provider>
 					<InspectorTargetExample />
 					<Story />
-					<Actionbar />
 				</Provider>
 			</>
 		),
@@ -111,6 +29,7 @@ const meta: Meta<typeof DomInspector> = {
 			store.set(actionbarAtom, {
 				show: true,
 				target: element,
+				position: {},
 			});
 
 			// confirm({
