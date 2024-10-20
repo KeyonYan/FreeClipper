@@ -1,12 +1,12 @@
-## Free Clipper for Notion
+## Free Clipper Next
 
-> A browser extension for freely selecting and clipping any element on a webpage to save it to Notion notes.
+> A browser extension for freely selecting and clipping any element on a webpage to create your custom workflows.
 
 🚧 Under development...
 
 ### Features
 
 - **✅ Free Selection Mode**: Press the Q key to activate free selection mode, and press the left mouse to clip.
-- 🚧 **Copy Mode**: Copy mode updates the clipboard.
-- 🚧 **Remember Mode**: Remember the last clipped element, and clip directly.
-- 🚧 **Free Selection Pro Mode**: More advanced features.
+- 🚧 **AI Enhanced HTML To Markdown**
+- 🚧 **AI Enhanced HTML To Notion Page**
+
