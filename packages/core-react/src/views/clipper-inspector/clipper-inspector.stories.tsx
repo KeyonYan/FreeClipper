@@ -1,7 +1,8 @@
-import { chat } from "@/utils/chat";
+import { actionbarAtom } from "@/components/clipper-action";
+import { Provider, store } from "@/components/clipper-provider";
+import { DomInspector } from "@/components/dom-inspector";
 import type { Meta, StoryObj } from "@storybook/react";
 import { InspectorTargetExample } from "./example";
-import { DomInspector } from "./index";
 
 const meta: Meta<typeof DomInspector> = {
 	title: "DomInspector",
@@ -10,49 +11,63 @@ const meta: Meta<typeof DomInspector> = {
 	decorators: [
 		(Story) => (
 			<>
-				<InspectorTargetExample />
-				<Story />
+				<Provider>
+					<InspectorTargetExample />
+					<Story />
+				</Provider>
 			</>
 		),
 	],
 	args: {
 		handleClip: async (element, toast, confirm) => {
-			const { update, dismiss } = toast({
-				title: "initiating chat...",
-				duration: 60_000,
-				progress: 0,
+			// const { update, dismiss } = toast({
+			// 	title: "initiating chat...",
+			// 	duration: 60_000,
+			// 	// progress: 0,
+			// });
+
+			store.set(actionbarAtom, {
+				show: true,
+				target: element,
+				position: {},
 			});
 
-			const res = await chat(element.textContent ?? "", (payload) => {
-				if (payload.status === "progress") {
-					update({
-						title: `Loading ${payload.name}...`,
-						progress: payload.progress,
-					});
-				}
-				if (payload.status === "ready") {
-					update({
-						title: `Model ${payload.model} is ready for ${payload.task}...`,
-						progress: 0,
-					});
-				}
-				if (payload.status === "start_inference") {
-					update({
-						title: "Start Inference...",
-						progress: 0,
-					});
-				}
+			// confirm({
+			// 	title: "Chat Result",
+			// 	description: "elapsed:xs",
+			// 	body: <ModalContent />,
+			// });
 
-				if (payload.status === "complete") {
-					dismiss();
+			// const res = await chat(element.textContent ?? "", (payload) => {
+			// 	if (payload.status === "progress") {
+			// 		update({
+			// 			title: `Loading ${payload.name}...`,
+			// 			progress: payload.progress,
+			// 		});
+			// 	}
+			// 	if (payload.status === "ready") {
+			// 		update({
+			// 			title: `Model ${payload.model} is ready for ${payload.task}...`,
+			// 			progress: 0,
+			// 		});
+			// 	}
+			// 	if (payload.status === "start_inference") {
+			// 		update({
+			// 			title: "Start Inference...",
+			// 			progress: 0,
+			// 		});
+			// 	}
 
-					confirm({
-						title: "Chat Result",
-						description: `elapsed: ${payload.elapsed / 1000}s`,
-						body: JSON.stringify(payload.output),
-					});
-				}
-			});
+			// 	if (payload.status === "complete") {
+			// 		dismiss();
+
+			// 		confirm({
+			// 			title: "Chat Result",
+			// 			description: `elapsed: ${payload.elapsed / 1000}s`,
+			// 			body: JSON.stringify(payload.output),
+			// 		});
+			// 	}
+			// });
 
 			// const notionKey = await getNotionKey();
 			// const clipDatabaseInfo = await getClipDatabaseInfo();

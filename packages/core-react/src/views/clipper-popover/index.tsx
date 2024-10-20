@@ -7,9 +7,6 @@ import {
 	setModeConfig,
 	setNotionKey,
 } from "@/mocks";
-import { queryClient } from "@/utils";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 export function ClipperPopover() {
 	const tabs = [
@@ -31,10 +28,5 @@ export function ClipperPopover() {
 			content: <ClipperMode getModeConfig={getModeConfig} setModeConfig={setModeConfig} />,
 		},
 	];
-	return (
-		<QueryClientProvider client={queryClient}>
-			<ClipperTabs tabs={tabs} />
-			<ReactQueryDevtools />
-		</QueryClientProvider>
-	);
+	return <ClipperTabs tabs={tabs} />;
 }

@@ -26,6 +26,11 @@ const config: StorybookConfig = {
 							changeOrigin: true,
 							rewrite: (path) => path.replace(/^\/notion-api/, ""),
 						},
+						"/chat-api": {
+							target: "https://api.openai.com",
+							changeOrigin: true,
+							rewrite: (path) => path.replace(/^\/chat-api/, ""),
+						},
 					},
 				},
 			});

@@ -3,10 +3,8 @@ import "./index.css";
 import { useEventListener, useKeyPress, useUpdateEffect } from "ahooks";
 import { useState } from "react";
 
-import { Modal } from "../ui/modal";
-import { Toaster } from "../ui/toaster";
-import { confirm } from "../ui/use-modal";
-import { toast } from "../ui/use-toast";
+import { confirm } from "@/components/ui/use-modal";
+import { toast } from "@/components/ui/use-toast";
 
 import type { DomInspectorProps, PositionCssMap } from "./types";
 
@@ -109,8 +107,8 @@ export function DomInspector(props: DomInspectorProps) {
 			},
 		});
 
-		const browserHeight = document.documentElement.clientHeight; // 浏览器高度
-		// 自动调整信息弹出位置
+		const browserHeight = document.documentElement.clientHeight;
+
 		const bottomToViewPort = browserHeight - bottom - Number(mb.replace("px", ""));
 
 		const topToViewPort = top - Number(mt.replace("px", ""));
@@ -234,8 +232,6 @@ export function DomInspector(props: DomInspectorProps) {
 					</span>
 				</div>
 			</div>
-			<Toaster />
-			<Modal />
 		</div>
 	);
 }

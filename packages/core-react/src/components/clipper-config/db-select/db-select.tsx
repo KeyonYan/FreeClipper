@@ -7,7 +7,7 @@ import { cn } from "@/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
 import React, { useState } from "react";
 import type { DatabaseInfo } from "../index";
-import { SelectedOption } from "./SelectedOption";
+import { SelectedOption } from "./selected-option";
 
 interface DbSelectProps {
 	selectedId: string;

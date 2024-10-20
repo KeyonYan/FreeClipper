@@ -41,13 +41,13 @@ let worker: null | Worker = null;
 
 function initWorker() {
 	if (!worker) {
-		worker = new Worker(new URL("./llm.worker.ts", import.meta.url), {
+		worker = new Worker(new URL("./worker.ts", import.meta.url), {
 			type: "module",
 		});
 	}
 }
 
-export async function chat(text: string, onMessage: (message: LLMWorkerMessage) => void) {
+export async function clientChat(text: string, onMessage: (message: LLMWorkerMessage) => void) {
 	initWorker();
 
 	worker?.postMessage({ type: "chat", text } satisfies LLMSendMessage);
