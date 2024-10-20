@@ -9,6 +9,7 @@ export interface ModalProps {
 	body: React.ReactNode;
 	title: string;
 	description?: string;
+	draggable?: boolean;
 }
 
 export function Modal() {
@@ -23,11 +24,11 @@ export function Modal() {
 	);
 }
 
-function DialogModal({ open, onOpenChange, ...props }: ModalState) {
+function DialogModal({ open, onOpenChange, draggable, ...props }: ModalState) {
 	return (
 		<>
-			<Dialog open={open} onOpenChange={onOpenChange}>
-				<DialogContent className={"sm:max-w-[425px]"}>
+			<Dialog modal={true} open={open} onOpenChange={onOpenChange}>
+				<DialogContent draggable={draggable}>
 					<DialogHeader>
 						<DialogTitle>{props.title}</DialogTitle>
 						<DialogDescription className={cn(props.description ? "block" : "hidden")}>

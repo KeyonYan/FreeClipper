@@ -109,8 +109,8 @@ export function DomInspector(props: DomInspectorProps) {
 			},
 		});
 
-		const browserHeight = document.documentElement.clientHeight; // 浏览器高度
-		// 自动调整信息弹出位置
+		const browserHeight = document.documentElement.clientHeight;
+
 		const bottomToViewPort = browserHeight - bottom - Number(mb.replace("px", ""));
 
 		const topToViewPort = top - Number(mt.replace("px", ""));

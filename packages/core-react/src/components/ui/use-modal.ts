@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type React from "react";
+
 import type { ModalProps } from "./modal";
 
 export interface ModalState extends ModalProps {
