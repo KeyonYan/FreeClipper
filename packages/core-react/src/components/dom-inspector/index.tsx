@@ -2,10 +2,6 @@ import "./index.css";
 
 import { useEventListener, useKeyPress, useUpdateEffect } from "ahooks";
 import { useState } from "react";
-
-import { confirm } from "@/components/ui/use-modal";
-import { toast } from "@/components/ui/use-toast";
-
 import type { DomInspectorProps, PositionCssMap } from "./types";
 
 function getDomPropertyValue(target: HTMLElement, property: string) {
@@ -205,7 +201,7 @@ export function DomInspector(props: DomInspectorProps) {
 			e.stopPropagation();
 			e.preventDefault();
 
-			await handleClip(hoveredElement, toast, confirm);
+			await handleClip(hoveredElement);
 
 			removeHoveredElement();
 			setEnableInspect(false);
