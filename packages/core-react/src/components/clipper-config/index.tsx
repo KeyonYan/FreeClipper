@@ -1,12 +1,12 @@
 "use client";
-import { searchNotionDatabase } from "@/api/notion-fetch";
 import { Button } from "@/components/ui/button";
 import { Form, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
-import { TubeLoadingIcon } from "@/icons/TubeLoadingIcon";
+import { searchNotionDatabase } from "@/utils/notion/notion-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateIcon } from "@radix-ui/react-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Loader2Icon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -167,7 +167,7 @@ export function ClipperConfig(props: ClipperConfigProps) {
 				<Button type="submit">
 					{isSaving ? (
 						<div className="flex flex-row items-center">
-							<TubeLoadingIcon />
+							<Loader2Icon className="animate-spin" />
 							<span>Save...</span>
 						</div>
 					) : (

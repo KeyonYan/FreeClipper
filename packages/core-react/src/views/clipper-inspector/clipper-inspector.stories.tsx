@@ -19,7 +19,7 @@ const meta: Meta<typeof DomInspector> = {
 		),
 	],
 	args: {
-		handleClip: async (element, toast, confirm) => {
+		handleClip: async (element) => {
 			// const { update, dismiss } = toast({
 			// 	title: "initiating chat...",
 			// 	duration: 60_000,
