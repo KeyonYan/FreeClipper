@@ -1,4 +1,5 @@
-import { ClientOpenAIServie } from "./openai";
+import { OpenAIService } from "./openai";
+import { TransformersService } from "./transformers";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
@@ -45,11 +46,17 @@ export interface ChatOptions {
 	onController?: (controller: AbortController) => void;
 }
 
+export interface ChatService {
+	chat(options: ChatOptions): void;
+}
+
 export class ChatApi {
-	openai = new ClientOpenAIServie();
+	openai = new OpenAIService();
+	transformers = new TransformersService();
 
 	async chat(options: ChatOptions) {
-		this.openai.chat(options);
+		// this.openai.chat(options);
+		this.transformers.chat(options);
 	}
 }
 

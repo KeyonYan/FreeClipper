@@ -1,8 +1,8 @@
 import { EventStreamContentType, type FetchEventSourceInit, fetchEventSource } from "@microsoft/fetch-event-source";
 import { prettyObject } from "../../format";
-import type { ChatOptions } from "../base";
+import type { ChatOptions, ChatService } from "../base";
 
-export class ClientOpenAIServie {
+export class OpenAIService implements ChatService {
 	path(path: string): string {
 		return [import.meta.env.VITE_OPENAI_API_URL, path].join("/");
 	}

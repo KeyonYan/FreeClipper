@@ -3,7 +3,6 @@ import { Modal } from "@/components/ui/modal";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Provider as JotaiProvider, createStore } from "jotai";
 
 export const store = createStore();
@@ -27,7 +26,6 @@ export function Provider({ children }: { children: React.ReactNode }) {
 				<Actionbar />
 				<Toaster />
 				<Modal />
-				<ReactQueryDevtools />
 			</QueryClientProvider>
 		</JotaiProvider>
 	);
