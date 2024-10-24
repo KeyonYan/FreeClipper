@@ -1,6 +1,4 @@
-import { confirm } from "@/components/ui/use-modal";
 import { toast } from "@/components/ui/use-toast";
-import type { TextGenerationOutput } from "@huggingface/transformers";
 import type { ChatMessage, ChatOptions, ChatService } from "../base";
 
 export type LLMSendMessage = {
@@ -8,14 +6,21 @@ export type LLMSendMessage = {
 	messages: ChatMessage[];
 };
 
+interface TextGenerationOutput {
+	generated_text: ChatMessage[];
+}
+
 export type LLMOutputMessage =
 	| {
 			status: "complete";
-			output: TextGenerationOutput[];
+			output: TextGenerationOutput;
 			elapsed: number;
 	  }
 	| {
 			status: "start_inference";
+	  }
+	| {
+			status: "processing";
 	  };
 
 type LLMLoadMessage =
@@ -54,10 +59,9 @@ export class TransformersService implements ChatService {
 	chat(options: ChatOptions) {
 		this.initWorker();
 
-		const { update, dismiss } = toast({
-			title: "initiating chat...",
+		const { update } = toast({
+			title: "Initiating Chat...",
 			duration: 60_000,
-			// progress: 0,
 		});
 
 		this.worker?.addEventListener("message", (e: MessageEvent<LLMWorkerMessage>) => {
@@ -81,15 +85,27 @@ export class TransformersService implements ChatService {
 					progress: 0,
 				});
 			}
+			if (data.status === "processing") {
+				update({
+					title: "Already Processing...",
+					duration: 2000,
+					progress: 100,
+				});
+
+				options.onFinish("an error occurred: Already Processing");
+			}
 
 			if (data.status === "complete") {
-				dismiss();
+				const lastMessage = data.output.generated_text.at(-1);
 
-				confirm({
-					title: "Chat Result",
+				update({
+					title: "Chat Complete",
 					description: `elapsed: ${data.elapsed / 1000}s`,
-					body: JSON.stringify(data.output),
+					duration: 2000,
+					progress: 100,
 				});
+
+				options.onFinish(String(lastMessage?.content));
 			}
 		});
 

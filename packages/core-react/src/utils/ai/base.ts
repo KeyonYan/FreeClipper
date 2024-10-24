@@ -55,8 +55,8 @@ export class ChatApi {
 	transformers = new TransformersService();
 
 	async chat(options: ChatOptions) {
-		this.openai.chat(options);
-		// this.transformers.chat(options);
+		// this.openai.chat(options);
+		this.transformers.chat(options);
 	}
 }
 

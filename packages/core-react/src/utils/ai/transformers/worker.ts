@@ -1,21 +1,33 @@
-import { type TextGenerationOutput, env, pipeline } from "@huggingface/transformers";
+import { env, pipeline } from "@huggingface/transformers";
 import type { LLMOutputMessage, LLMSendMessage } from "./index";
 
-// Specify a custom location for models (defaults to '/models/').
+// Specify a custom location for local models (defaults to '/models/').
 env.localModelPath = "/models/";
 
-// Disable the loading of remote models from the Hugging Face Hub:
-env.allowRemoteModels = false;
+env.allowRemoteModels = true;
+env.allowLocalModels = false;
 
-const generatorPromise = pipeline("text-generation", "Xenova/Qwen1.5-0.5B-Chat", {
+const generatorPromise = pipeline("text-generation", "onnx-community/Llama-3.2-1B-Instruct-q4f16", {
 	device: "webgpu",
+	dtype: "q4f16",
 	progress_callback: self.postMessage,
 });
+let generator: Awaited<typeof generatorPromise>;
+let isProcessing = false;
 
 self.addEventListener("message", async (event: MessageEvent<LLMSendMessage>) => {
 	const { messages } = event.data;
 
-	const generator = await generatorPromise;
+	if (isProcessing) {
+		self.postMessage({ status: "processing" } satisfies LLMOutputMessage);
+		return;
+	}
+
+	isProcessing = true;
+
+	if (!generator) {
+		generator = await generatorPromise;
+	}
 
 	self.postMessage({ status: "start_inference" } satisfies LLMOutputMessage);
 
@@ -29,9 +41,9 @@ self.addEventListener("message", async (event: MessageEvent<LLMSendMessage>) => 
 			};
 		}),
 		{
-			max_new_tokens: 1280,
+			max_new_tokens: 128,
 			do_sample: false,
-			// return_full_text: false,
+			use_cache: true,
 		},
 	);
 
@@ -40,7 +52,7 @@ self.addEventListener("message", async (event: MessageEvent<LLMSendMessage>) => 
 	// Send the output back to the main thread
 	self.postMessage({
 		status: "complete",
-		output: output as TextGenerationOutput[],
+		output: (Array.isArray(output) ? output.at(-1) : output) as never,
 		elapsed,
-	} satisfies LLMOutputMessage);
+	});
 });

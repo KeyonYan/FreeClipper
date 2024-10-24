@@ -1,4 +1,5 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+import type { UserConfig } from "vite";
 
 const config: StorybookConfig = {
 	stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -19,6 +20,9 @@ const config: StorybookConfig = {
 
 		if (configType === "DEVELOPMENT") {
 			return mergeConfig(config, {
+				optimizeDeps: {
+					exclude: ["@huggingface/transformers"],
+				},
 				server: {
 					proxy: {
 						"/notion-api": {
@@ -33,7 +37,7 @@ const config: StorybookConfig = {
 						},
 					},
 				},
-			});
+			} satisfies UserConfig);
 		}
 
 		return config;
