@@ -1,13 +1,6 @@
 import { ClipperConfig, ClipperMode, ClipperTabs } from "free-clipper-core-react";
 import "free-clipper-core-react/style.css";
-import {
-	getClipDatabaseInfo,
-	getModeConfig,
-
-	setClipDatabaseInfo,
-	setModeConfig,
-	notionKey,
-} from "@/lib/store";
+import { getClipDatabaseInfo, getModeConfig, setClipDatabaseInfo, setModeConfig, notionKey } from "@/lib/store";
 
 function App() {
 	const tabs = [

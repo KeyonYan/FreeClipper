@@ -1,3 +1,4 @@
+import { MockService } from "./mock";
 import { OpenAIService } from "./openai";
 import { TransformersService } from "./transformers";
 
@@ -50,13 +51,19 @@ export interface ChatService {
 	chat(options: ChatOptions): void;
 }
 
+export interface ChatService {
+	chat(options: ChatOptions): void;
+}
+
 export class ChatApi {
 	openai = new OpenAIService();
 	transformers = new TransformersService();
+	mock = new MockService();
 
 	async chat(options: ChatOptions) {
 		// this.openai.chat(options);
-		this.transformers.chat(options);
+		// this.transformers.chat(options);
+		this.mock.chat(options);
 	}
 }
 

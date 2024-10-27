@@ -1,0 +1,241 @@
+.markdown {
+	--markdown-font-size: 14px;
+	--markdown-header-multiple: 1;
+	--markdown-margin-multiple: 1;
+	--markdown-line-height: 1.6;
+	--markdown-border-radius: 8px;
+
+	position: relative;
+
+	width: 100%;
+	max-width: 100%;
+	padding-inline: 1px;
+
+	font-size: var(--markdown-font-size);
+	line-height: var(--markdown-line-height);
+	word-break: break-word;
+
+	svg {
+		line-height: 1;
+	}
+
+	a {
+		@apply text-blue-500;
+
+		&:hover {
+			@apply text-blue-700;
+		}
+	}
+
+	blockquote {
+		margin-block: calc(var(--markdown-margin-multiple) * 1em);
+		margin-inline: 0;
+		padding-block: 0;
+		padding-inline: 1em;
+
+		@apply border-l-4 border-slate-200 text-gray-500;
+	}
+
+	/* inline code */
+	code:not(:has(span)) {
+		display: inline;
+		margin-inline: 0.25em;
+		padding-block: 0.2em;
+		padding-inline: 0.4em;
+		font-size: 0.875em;
+		line-height: 1;
+		word-break: break-word;
+		white-space: break-spaces;
+		border-radius: 0.25em;
+		@apply bg-slate-100 border border-slate-200;
+	}
+
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		margin-block: max(
+			calc(var(--markdown-header-multiple) * var(--markdown-margin-multiple) * 0.4em),
+			var(--markdown-font-size)
+		);
+		font-weight: bold;
+		line-height: 1.25;
+	}
+
+	h1 {
+		font-size: calc(var(--markdown-font-size) * (1 + 1.5 * var(--markdown-header-multiple)));
+	}
+
+	h2 {
+		font-size: calc(var(--markdown-font-size) * (1 + var(--markdown-header-multiple)));
+	}
+
+	h3 {
+		font-size: calc(var(--markdown-font-size) * (1 + 0.5 * var(--markdown-header-multiple)));
+	}
+
+	h4 {
+		font-size: calc(var(--markdown-font-size) * (1 + 0.25 * var(--markdown-header-multiple)));
+	}
+
+	h5,
+	h6 {
+		font-size: calc(var(--markdown-font-size) * 1);
+	}
+
+	hr {
+		margin-block: calc(var(--markdown-margin-multiple) * 1.5em);
+		border-style: dashed;
+		border-width: 1px;
+		border-block-start: none;
+		border-inline-start: none;
+		border-inline-end: none;
+
+		@apply border-slate-200;
+	}
+
+	img {
+		max-width: 100%;
+	}
+
+	> img,
+	> p > img {
+		margin-block: calc(var(--markdown-margin-multiple) * 1em);
+		border-radius: calc(var(--markdown-border-radius) * 1px);
+	}
+
+	kbd {
+		cursor: default;
+		display: inline-block;
+		min-width: 1em;
+		margin-inline: 0.25em;
+		padding-block: 0.2em;
+		padding-inline: 0.4em;
+		font-size: 0.875em;
+		font-weight: 500;
+		line-height: 1;
+		text-align: center;
+		border-radius: 0.25em;
+		@apply border border-b-4 border-slate-200;
+	}
+
+	li {
+		margin-block: calc(var(--markdown-margin-multiple) * 0.33em);
+
+		p {
+			display: inline;
+		}
+	}
+
+	ul,
+	ol {
+		margin-block: calc(var(--markdown-margin-multiple) * 1em);
+		margin-inline-start: 1em;
+		padding-inline-start: 0;
+		list-style-position: outside;
+
+		ul,
+		ol {
+			margin-block: 0;
+		}
+
+		li {
+			margin-inline-start: 1em;
+		}
+	}
+
+	ol {
+		list-style: auto;
+	}
+
+	ul {
+		list-style-type: none;
+
+		li {
+			&::before {
+				content: "-";
+				display: inline-block;
+				margin-inline: -1em 0.5em;
+				opacity: 0.5;
+			}
+		}
+	}
+
+	p {
+		margin-block-start: calc(var(--markdown-margin-multiple) * 1em);
+		margin-block-end: calc(var(--markdown-margin-multiple) * 1em);
+		line-height: var(--markdown-line-height);
+		letter-spacing: 0.02em;
+	}
+
+	pre,
+	[data-code-type="highlighter"] {
+		white-space: break-spaces;
+		border: none;
+
+		> code {
+			padding: 0 !important;
+			border: none !important;
+			font-size: 0.875em;
+			line-height: 1.6;
+		}
+	}
+
+	strong {
+		font-weight: 600;
+	}
+
+	table {
+		unicode-bidi: isolate;
+		overflow: auto hidden;
+		display: block;
+		border-spacing: 0;
+		border-collapse: collapse;
+
+		box-sizing: border-box;
+		width: max-content;
+		max-width: 100%;
+		margin-block: calc(var(--markdown-margin-multiple) * 1em);
+
+		text-align: start;
+		text-indent: initial;
+		text-wrap: pretty;
+		word-break: auto-phrase;
+		overflow-wrap: break-word;
+		border-radius: calc(var(--markdown-border-radius) * 1px);
+
+		@apply bg-gray-100 rounded border;
+
+		code {
+			word-break: break-word;
+		}
+
+		thead {
+			@apply bg-gray-200;
+		}
+
+		th,
+		td {
+			min-width: 120px;
+			padding-block: 0.75em;
+			padding-inline: 1em;
+			text-align: start;
+		}
+	}
+
+	> video,
+	> p > video {
+		margin-block: calc(var(--markdown-margin-multiple) * 1em);
+		border-radius: calc(var(--markdown-border-radius) * 1px);
+	}
+
+	video {
+		max-width: 100%;
+	}
+
+	[aria-hidden="true"] {
+		display: none;
+	}
+}
