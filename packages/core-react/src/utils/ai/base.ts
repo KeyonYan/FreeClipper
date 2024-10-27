@@ -51,6 +51,10 @@ export interface ChatService {
 	chat(options: ChatOptions): void;
 }
 
+export interface ChatService {
+	chat(options: ChatOptions): void;
+}
+
 export class ChatApi {
 	openai = new OpenAIService();
 	transformers = new TransformersService();
