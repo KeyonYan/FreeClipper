@@ -9,7 +9,7 @@
 		"format": "biome format --write"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.3",
+		"@biomejs/biome": "1.9.4",
 		"typescript": "^5.3.2",
 		"vite": "^5.0.10"
 	},

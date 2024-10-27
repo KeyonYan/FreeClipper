@@ -11,9 +11,7 @@
 		"./style.css": "./dist/style.css"
 	},
 	"types": "./dist/index.d.ts",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"scripts": {
 		"dev:sb": "storybook dev -p 6006",
 		"build": "storybook build",
@@ -46,6 +44,7 @@
 		"@radix-ui/react-tabs": "^1.0.4",
 		"@radix-ui/react-toast": "^1.1.5",
 		"@radix-ui/react-tooltip": "^1.0.7",
+		"@shikijs/transformers": "^1.22.1",
 		"@tanstack/react-query": "^5.56.2",
 		"@tanstack/react-query-devtools": "^5.56.2",
 		"ahooks": "^3.7.10",
@@ -57,10 +56,19 @@
 		"htmlarkdown": "^1.0.2",
 		"jotai": "^2.10.1",
 		"lucide-react": "^0.323.0",
+		"mermaid": "^11.3.0",
 		"re-resizable": "^6.10.0",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"react-hook-form": "^7.50.1",
+		"react-markdown": "^9.0.1",
+		"rehype-katex": "^7.0.1",
+		"rehype-raw": "^7.0.0",
+		"remark": "^15.0.1",
+		"remark-gfm": "^4.0.0",
+		"remark-math": "^6.0.0",
+		"remark-mdx": "^3.1.0",
+		"shiki": "^1.22.1",
 		"tailwind-merge": "^2.2.1",
 		"tailwindcss-animate": "^1.0.7",
 		"usehooks-ts": "^3.1.0",

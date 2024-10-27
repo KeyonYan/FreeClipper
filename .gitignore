@@ -26,5 +26,6 @@ dist-ssr
 tailwind.out.css
 
 .output
+.wxt
 
 models
