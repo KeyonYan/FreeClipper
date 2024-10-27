@@ -1,7 +1,7 @@
 import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 
 import { ChatBubbleIcon, ClipboardCopyIcon, NotionLogoIcon } from "@radix-ui/react-icons";
-import { ChatBotCard } from "./ai-card";
+import { ChatBotCard } from "./cards";
 
 import { atom, useAtom } from "jotai";
 import { useRef, useState } from "react";

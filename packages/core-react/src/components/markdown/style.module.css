@@ -1,8 +1,8 @@
 .markdown {
-	--markdown-font-size: 16px;
+	--markdown-font-size: 14px;
 	--markdown-header-multiple: 1;
-	--markdown-margin-multiple: 1.5;
-	--markdown-line-height: 1.8;
+	--markdown-margin-multiple: 1;
+	--markdown-line-height: 1.6;
 	--markdown-border-radius: 8px;
 
 	position: relative;

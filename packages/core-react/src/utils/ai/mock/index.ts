@@ -1,3 +1,4 @@
+import { markdownMockText } from "@/components/markdown/example";
 import type { ChatOptions, ChatService } from "../base";
 
 export function delay(ms: number) {
@@ -40,7 +41,7 @@ export async function simulateChat(text: string, option: SimulateChatOptions) {
 
 export class MockService implements ChatService {
 	async chat(options: ChatOptions) {
-		simulateChat("Hello, how can I help you?", {
+		simulateChat(markdownMockText, {
 			onUpdate: options.onUpdate,
 			onFinish: options.onFinish,
 		});

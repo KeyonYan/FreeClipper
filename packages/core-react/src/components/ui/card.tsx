@@ -23,7 +23,7 @@ export function DraggableCard({ children, className, onClose, style, title }: Dr
 			}}
 			draggable={false}
 			className={cn(
-				"rounded-2xl fixed top-0 left-0 border shadow-lg flex flex-col p-4 justify-center bg-white/40 backdrop-blur w-[420px]",
+				"rounded-2xl fixed top-0 left-0 border shadow-lg flex flex-col p-4 justify-center bg-white/70 backdrop-blur w-[420px]",
 				className,
 			)}
 			style={style}

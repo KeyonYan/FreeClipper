@@ -3,6 +3,7 @@ import type { ChatMessage } from "@/utils/ai/base";
 import { useChat } from "@/utils/ai/hook";
 import { Loader2Icon } from "lucide-react";
 import { useEffect } from "react";
+import { Markdown } from "../markdown";
 
 function getLatestBotMessage(messages: ChatMessage[]) {
 	const result = messages.filter((m) => m.role === "assistant").at(-1)?.content;
@@ -26,7 +27,7 @@ export function ChatbotCardContent({ prompt }: ChatbotResultProps) {
 
 	return (
 		<>
-			{message}
+			<Markdown className="max-h-96 overflow-y-auto">{message}</Markdown>
 			{loading && <Loader2Icon size={16} className="animate-spin" />}
 		</>
 	);
